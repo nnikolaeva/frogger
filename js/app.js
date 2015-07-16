@@ -24,7 +24,6 @@ window.onload = function() {
 			resetGame();
 		}, 100);
 	}
-	// function draws foreground entities
 	function setUpEntities() {
 		// add background entities
 		for (var row = 0; row < numRows; row++) {
