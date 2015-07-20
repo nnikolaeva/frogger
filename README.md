@@ -1,6 +1,6 @@
 # Frogger arcade game
 
-HOW TO RUN THE GAME:
+HOW TO RUN THE GAME
 
 - Download all files.
 - Open index.html in your favorite browser.
