@@ -35,16 +35,19 @@ var Entity = function(x, y, sprite) {
     };
 };
 var WaterBlock = function(x, y) {
-    Entity.call(this, x, y, simpleSprite('images/water-block.png'));
+    Entity.call(this, x, y, simpleSprite('images/water-block_small.png'));
 };
 var StoneBlock = function(x, y) {
-    Entity.call(this, x, y, simpleSprite('images/stone-block.png'));
+    Entity.call(this, x, y, simpleSprite('images/stone-block_small.png'));
 };
 var GrassBlock = function(x, y) {
-    Entity.call(this, x, y, simpleSprite('images/grass-block.png'));
+    Entity.call(this, x, y, simpleSprite('images/grass-block_small.png'));
+};
+var SelectorBlock = function(x, y) {
+    Entity.call(this, x, y, simpleSprite('images/star_small.png'));
 };
 var Enemy = function(x, y, speed, delay, numCols) {
-    Entity.call(this, x, y, sprite('images/enemy-bug.png', 0, -20, defaultBoundingBox()));
+    Entity.call(this, x, y, sprite('images/enemy-bug_small.png', 0, -10, defaultBoundingBox()));
     this.initialX = x;
     this.isVisible = false;
     this.delay = delay;
@@ -70,7 +73,7 @@ var Enemy = function(x, y, speed, delay, numCols) {
     };
 };
 var Player = function(x, y) {
-    Entity.call(this, x, y, sprite('images/char-boy.png', 0, -30, boundingBox(0.17, 0.36, 0.66, 0.46)));
+    Entity.call(this, x, y, sprite('images/char-boy_small.png', 0, -15, boundingBox(0.17, 0.36, 0.66, 0.46)));
     this.handleInput = function(keyCode, numRows, numCols) {
         switch (keyCode) {
             case 'left':
@@ -93,6 +96,32 @@ var Player = function(x, y) {
                     this.y = this.y + 1;
                 }
                 break;
+        }
+    };
+};
+var Mover = function(x, y, speed, delay, numCols) {
+    Entity.call(this, x, y, sprite('images/log_small.png', 0, 0, defaultBoundingBox()));
+    this.initialX = x;
+    this.isVisible = false;
+    this.delay = delay;
+    this.initDelay = delay;
+    this.speed = speed;
+    this.update = function(dt) {
+        if (this.delay > 0) {
+            this.delay -= dt;
+        } else {
+            this.isVisible = true;
+            this.x = this.x + dt * this.speed;
+            if (this.x >= numCols) {
+                this.x = this.initialX;
+                this.delay = this.initDelay;
+                this.isVisible = false;
+            }
+        }
+    };
+    this.render = function(engine) {
+        if (this.isVisible === true) {
+            engine.drawImage(this.sprite, this.x, this.y);
         }
     };
 };

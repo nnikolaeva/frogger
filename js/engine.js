@@ -10,10 +10,10 @@
   * Engine class translates game coordinates to pixels.
   */
  var Engine = function() {
-     var gridWidth = 101;
-     var gridHeight = 83;
-     var canvasWidth = 505;
-     var canvasHeight = 606;
+     var gridWidth = 51; // 101;
+     var gridHeight = 42;//83;
+     var canvasWidth = 969; //505;
+     var canvasHeight = 840; //606;
      var lastTime;
      var canvas = document.getElementById("canvas");
      canvas.width = canvasWidth;
@@ -38,11 +38,13 @@
      };
      this.load = function() {
          Resources.load([
-             'images/stone-block.png',
-             'images/water-block.png',
-             'images/grass-block.png',
-             'images/enemy-bug.png',
-             'images/char-boy.png'
+             'images/stone-block_small.png',
+             'images/water-block_small.png',
+             'images/grass-block_small.png',
+             'images/enemy-bug_small.png',
+             'images/char-boy_small.png',
+             'images/log_small.png',
+             'images/star_small.png'
          ]);
          lastTime = Date.now();
          Resources.onReady(this.start.bind(this));
