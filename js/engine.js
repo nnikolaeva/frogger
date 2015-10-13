@@ -13,19 +13,39 @@
      var gridWidth = 51; // 101;
      var gridHeight = 42;//83;
      var canvasWidth = 969; //505;
-     var canvasHeight = 840; //606;
+     var canvasHeight = 714; //606;
      var lastTime;
      var canvas = document.getElementById("canvas");
      canvas.width = canvasWidth;
      canvas.height = canvasHeight;
      var ctx = canvas.getContext("2d");
+
+     // var playerInfoPanel = document.getElementById("player-info");
+     // playerInfoPanel.width = canvasWidth;
+     // playerInfoPanel.height = gridHeight;
+     // var ctxPlayerInfo = playerInfoPanel.getContext("2d");
+     
+     this.infoEntities = [];
      this.backgroundEntities = [];
      this.entities = [];
+     // this.setUpPlayerInfoPanel = function() {
+     //    for (entry in this.infoEntities) {
+     //        this.infoEntities[entry].render();
+     //    }
+     // };
+
+     this.updatePlayerInfoPanel = function() {
+        //ctx.clearRect(0, canvasHeight - gridHeight,canvasWidth, gridHeight);
+        this.deleteInfoEntities();
+     };
      this.clearGameBoard = function() {
          ctx.clearRect(0, 0, canvasWidth, canvasHeight);
      };
      this.deleteEntities = function() {
          this.entities.length = 0;
+     };
+     this.deleteInfoEntities = function() {
+        this.infoEntities.length = 0;
      };
      this.addBackgroundEntity = function(entity) {
          this.backgroundEntities.push(entity);
@@ -36,6 +56,9 @@
      this.addEntity = function(entity) {
          this.entities.push(entity);
      };
+     this.addInfoEntity = function(entity) {
+        this.infoEntities.push(entity);
+     };
      this.load = function() {
          Resources.load([
              'images/stone-block_small.png',
@@ -44,7 +67,8 @@
              'images/enemy-bug_small.png',
              'images/char-boy_small.png',
              'images/log_small.png',
-             'images/star_small.png'
+             'images/star_small.png',
+             'images/heart_small.png'
          ]);
          lastTime = Date.now();
          Resources.onReady(this.start.bind(this));
@@ -70,6 +94,9 @@
          for (entity in this.entities) {
              this.entities[entity].render(this);
          }
+         for (entity in this.infoEntities) {
+            this.infoEntities[entity].render(this);
+        }
      };
      this.drawImage = function(sprite, x, y) {
          ctx.drawImage(Resources.get(sprite.image), x * gridWidth + sprite.dx, y * gridHeight + sprite.dy);
@@ -81,6 +108,36 @@
      this.deleteSubscriptions = function() {
          this.subscribtions.length = 0;
      };
+     this.changePlayerPositionToInitial = function() {
+        for (var i in this.entities) {
+            if (this.entities[i] instanceof Player) {
+                this.entities[i].changePositionToInitial();
+            }
+        }
+     };
+     this.gameIsOn = function() {
+        for (var i in this.entities) {
+            if (this.entities[i] instanceof Player) {
+                return this.entities[i].isAlive();
+            }
+        }
+     };
+     this.decreasePlayerLifeCounter = function() {
+        for (var i in this.entities) {
+            if (this.entities[i] instanceof Player) {
+                this.entities[i].decreaseLifeCounter();
+
+            }
+        }
+     };
+     this.getPlayerLifeNumber = function() {
+        for (var i in this.entities) {
+            if (this.entities[i] instanceof Player) {
+                return this.entities[i].numberOfLifes;
+
+            }
+        }
+     }
      this.checkCollision = function() {
          var s;
          var e;

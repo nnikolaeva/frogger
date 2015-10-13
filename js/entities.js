@@ -34,6 +34,9 @@ var Entity = function(x, y, sprite) {
         engine.drawImage(this.sprite, this.x, this.y);
     };
 };
+
+
+
 var WaterBlock = function(x, y) {
     Entity.call(this, x, y, simpleSprite('images/water-block_small.png'));
 };
@@ -72,8 +75,26 @@ var Enemy = function(x, y, speed, delay, numCols) {
         }
     };
 };
-var Player = function(x, y) {
+var Player = function(x, y, numberOfLifes) {
     Entity.call(this, x, y, sprite('images/char-boy_small.png', 0, -15, boundingBox(0.17, 0.36, 0.66, 0.46)));
+    this.initialX = x;
+    this.initialY = y;
+    this.numberOfLifes = numberOfLifes;
+
+    this.changePositionToInitial = function() {
+        this.x = this.initialX;
+        this.y = this.initialY;
+    };
+    this.decreaseLifeCounter = function() {
+        this.numberOfLifes = this.numberOfLifes - 1;
+    };
+    this.isAlive = function() {
+        console.log(this.numberOfLifes);
+        if (this.numberOfLifes > 0) {
+            return true;
+        }
+        return false;
+    };
     this.handleInput = function(keyCode, numRows, numCols) {
         switch (keyCode) {
             case 'left':
@@ -98,6 +119,12 @@ var Player = function(x, y) {
                 break;
         }
     };
+};
+
+var Lifes = function(x, y, speed, delay, numCols) {
+    Entity.call(this, x, y, sprite('images/heart_small.png', 0, 0, defaultBoundingBox()));
+    //this.state = true;
+
 };
 var Mover = function(x, y, speed, delay, numCols) {
     Entity.call(this, x, y, sprite('images/log_small.png', 0, 0, defaultBoundingBox()));

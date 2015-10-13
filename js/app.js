@@ -1,23 +1,51 @@
 /* app.js file creates instances of entities and provides the game rules 
  */
 window.onload = function() {
-    var NUM_ROWS = 15; //6;
+    var player;
+    var NUM_ROWS = 16; //6;
     var NUM_COLS = 19; //5;
+    var LIFE_NUMBER = 3;
     var engine = new Engine();
-    setUpEntities();
     engine.load();
+    setUpEntities();
+    document.addEventListener('keyup', function(e) {
+            var allowedKeys = {
+                37: 'left',
+                38: 'up',
+                39: 'right',
+                40: 'down'
+            };
+            player.handleInput(allowedKeys[e.keyCode], NUM_ROWS, NUM_COLS);
+        });
 
     function resetGame() {
         engine.clearGameBoard();
         engine.deleteBackgroundEntities();
         engine.deleteEntities();
+        engine.deleteInfoEntities();
         engine.deleteSubscriptions();
         setUpEntities();
+        setUpPlayerInfoPanel();
+    }
+
+    function resetLevel() {
+
+        engine.clearGameBoard();
+        setUpPlayerInfoPanel();
+        player.changePositionToInitial();
     }
 
     function onCollision() {
-        alert("GAME OVER");
-        resetGame();
+        if (player.numberOfLifes > 1) {
+            player.numberOfLifes--;
+            resetLevel();
+            setUpPlayerInfoPanel();
+            console.log("on");
+        } else {
+            resetGame();
+            
+        }
+        
     }
 
     function onWin() {
@@ -27,11 +55,18 @@ window.onload = function() {
             resetGame();
         }, 100);
     }
+    function setUpPlayerInfoPanel() {
+        engine.deleteInfoEntities();
+        var lifes = engine.getPlayerLifeNumber();
+        for (var i = 0; i < player.numberOfLifes; i++) {
+            engine.addInfoEntity(new Lifes(i, NUM_ROWS));
+        }
+    }
 
     function setUpEntities() {
         //add background entities
         for (var col = 0; col < NUM_COLS; col++) {
-            for (var row = 0; row < NUM_ROWS; row++) {
+            for (var row = 0; row < NUM_ROWS - 1; row++) {
                 if ((row === 0 && col % 2 === 0) || (row === 7) || (row === 14)) {
                     engine.addBackgroundEntity(new GrassBlock(col, row));
                     if (col === 4 && row === 0) {
@@ -46,10 +81,10 @@ window.onload = function() {
             }
         }
 
-
-
         // add foreground entities
-        var player = new Player(9, 14);
+        player = new Player(9, 14, LIFE_NUMBER);
+        setUpPlayerInfoPanel();
+
         engine.addEntity(player);
         var speed;
         var delay = 0;
@@ -59,18 +94,9 @@ window.onload = function() {
             engine.addEntity(new Mover(-1, i % 6 + 2, speed, delay, NUM_COLS));
             delay = Math.random() * 4 + 1;
         }
-        document.addEventListener('keyup', function(e) {
-            var allowedKeys = {
-                37: 'left',
-                38: 'up',
-                39: 'right',
-                40: 'down'
-            };
-            player.handleInput(allowedKeys[e.keyCode], NUM_ROWS, NUM_COLS);
-        });
-        // engine
-        //     .addSubscribtion(new Subscribtion(player, [Enemy],
-        //         onCollision));
+        engine
+            .addSubscribtion(new Subscribtion(player, [Enemy],
+                onCollision));
         // engine.addSubscribtion(new Subscribtion(player, [WaterBlock], onWin));
     }
 };
