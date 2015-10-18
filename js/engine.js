@@ -28,18 +28,105 @@
      this.infoEntities = [];
      this.backgroundEntities = [];
      this.entities = [];
+
+     this.layers = [];
      // this.setUpPlayerInfoPanel = function() {
      //    for (entry in this.infoEntities) {
      //        this.infoEntities[entry].render();
      //    }
      // };
 
+     this.addLayer = function(layer) {
+        this.layers.push(layer);
+     };
+     this.getActiveEntity = function() {
+        var upperLeyer = this.layers[this.layers.length - 1];
+            for (var i = 0; i < upperLeyer.length; i++) {
+                if (upperLeyer[i] instanceof Button && upperLeyer[i].selected === true) {
+                    //this.executeCommand(upperLeyer[i].name);
+                    this.deleteUpperLayer();
+                    break;
+                } else if (upperLeyer[i] instanceof Player) {
+                    upperLeyer[i].handle
+                }
+            }
+     };
+     this.getActiveButton = function(array) {
+        for (var i in array) {
+            if (array[i].selected === true) {
+                return array[i];
+            }
+        }
+     };
+     // this.handle = function(keyCode, numRows, numCols) {
+       
+     //        var upperLeyer = this.layers[this.layers.length - 1];
+     //        for (var i = 0; i < upperLeyer.length; i++) {
+     //            if (upperLeyer[i] instanceof Player) {
+     //                upperLeyer[i].handleInput(keyCode, numRows, numCols);
+     //            } else if (upperLeyer[i] instanceof Button) {
+     //                if (keyCode === "enter") {
+     //                var button = this.getActiveButton(upperLeyer);
+     //                console.log(button.name);
+     //                //this.executeCommand(upperLeyer[i].name);
+     //                this.deleteUpperLayer();
+     //                break;
+     //                } else if (keyCode === "up") {
+
+     //                }
+     //            } 
+     //        }
+            
+            
+     // };
+     
+     this.handleUserInput = function(keyCode, numRows, numCols) {
+        var upperLeyer = this.layers[this.layers.length - 1];
+        console.log("upperLayer");
+        console.log(upperLeyer);
+        var sub;
+        for (var i = 0; i < this.userInputSubscribtions.length; i++) {
+            sub = this.userInputSubscribtions[i];
+            for (var j in upperLeyer) {
+                if (upperLeyer[j] instanceof sub.entity && keyCode === sub.keyCode){
+                    console.log("asd");
+                    sub.callback();
+                    //sub.callback.call(upperLeyer[j], numRows, numCols);
+                }
+            }
+            
+
+        }
+     };
+
+     this.addEntityToLayer = function(entity, layerNumber) {
+        this.layers[layerNumber].push(entity);
+     };
+
+
+
+
+
+
+
+
+     this.deleteUpperLayer = function() {
+        this.layers.pop();
+     }
+
+
+
+
      this.updatePlayerInfoPanel = function() {
         //ctx.clearRect(0, canvasHeight - gridHeight,canvasWidth, gridHeight);
-        this.deleteInfoEntities();
+        //this.deleteInfoEntities();
      };
      this.clearGameBoard = function() {
          ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+     };
+
+     this.deleteLayers = function() {
+        this.layers.length = 0;
      };
      this.deleteEntities = function() {
          this.entities.length = 0;
@@ -83,23 +170,63 @@
          requestAnimationFrame(this.start.bind(this));
      };
      this.update = function(dt) {
-         for (var entity in this.entities) {
-             this.entities[entity].update(dt);
+         // for (var entity in this.entities) {
+         //     this.entities[entity].update(dt);
+         // }
+
+         for (var i = 0; i < this.layers.length; i++) {
+            for (var j = 0; j < this.layers[i].length; j++) {
+                this.layers[i][j].update(dt);
+            }
          }
      };
      this.render = function() {
-         for (var entity in this.backgroundEntities) {
-             this.backgroundEntities[entity].render(this);
+        console.log("render");
+         // for (var entity in this.backgroundEntities) {
+         //     this.backgroundEntities[entity].render(this);
+         // }
+         // for (entity in this.entities) {
+         //     this.entities[entity].render(this);
+         // }
+         for (var i = 0; i < this.layers.length; i++) {
+            for (var j = 0; j < this.layers[i].length; j++) {
+                this.layers[i][j].render(this);
+            }
          }
-         for (entity in this.entities) {
-             this.entities[entity].render(this);
-         }
-         for (entity in this.infoEntities) {
-            this.infoEntities[entity].render(this);
-        }
+
+
+
+        //  for (entity in this.infoEntities) {
+        //     this.infoEntities[entity].render(this);
+        // }
      };
      this.drawImage = function(sprite, x, y) {
          ctx.drawImage(Resources.get(sprite.image), x * gridWidth + sprite.dx, y * gridHeight + sprite.dy);
+     };
+     this.drawRect = function(x, y, w, h, color) {
+        //ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+        ctx.fillStyle = color;
+        ctx.fillRect(x * gridWidth, y * gridHeight, w * gridWidth, h * gridHeight);
+        // ctx.fillStyle = "yellow";
+        // ctx.font = "50px Arial";
+        // ctx.fillText("START", 5 * gridWidth, 5 * gridHeight);
+     };
+     this.drawStrokeRect = function(x, y, w, h, color) {
+        //ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+        //ctx.fillStyle = color;
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 3;
+        ctx.strokeRect(x * gridWidth, y * gridHeight, w * gridWidth, h * gridHeight);
+
+
+        // ctx.fillStyle = "yellow";
+        // ctx.font = "50px Arial";
+        // ctx.fillText("START", 5 * gridWidth, 5 * gridHeight);
+     };
+     this.drawText = function(x, y, text, color, font) {
+        ctx.fillStyle = color;
+        ctx.font = font;
+        ctx.fillText(text, x * gridWidth, y * gridHeight);
      };
      this.subscribtions = [];
      this.addSubscribtion = function(subscribtion) {
@@ -108,6 +235,18 @@
      this.deleteSubscriptions = function() {
          this.subscribtions.length = 0;
      };
+
+     this.userInputSubscribtions = [];
+     this.addUserInputSubscribtion = function(userInputSubscribtion) {
+        this.userInputSubscribtions.push(userInputSubscribtion);
+        //console.log(this.userInputSubscribtions);
+     };
+     this.deleteUserInputSubscriptions = function() {
+        this.userInputSubscribtions.length = 0;
+     };
+
+
+
      this.changePlayerPositionToInitial = function() {
         for (var i in this.entities) {
             if (this.entities[i] instanceof Player) {
@@ -138,7 +277,19 @@
             }
         }
      }
+     this.changeLifeIconVisibility = function() {
+        for (var i in this.entities) {
+            if (this.entities[i] instanceof Life) {
+                if (this.entities[i].isVisible === true) {
+                    this.entities[i].isVisible = false;
+                    break;
+                }
+
+            }
+        }
+     };
      this.checkCollision = function() {
+        var currentLayer;
          var s;
          var e;
          var t;
@@ -153,10 +304,18 @@
              t = s.types;
              var candidates = [];
              for (var i in t) {
-                 for (var j in this.entities) {
-                     if (this.entities[j] instanceof t[i]) {
-                         candidates.push(this.entities[j]);
+                 // for (var j in entities) {
+                 //     if (entities[j] instanceof t[i]) {
+                 //         candidates.push(entities[j]);
+                 //     }
+                 // }
+                 for (var k = 0; k < this.layers.length; k++) {
+                    currentLayer = this.layers[k];
+                    for (var j = 0; j < currentLayer.length; j++) {
+                        if (currentLayer[j] instanceof t[i]) {
+                         candidates.push(currentLayer[j]);
                      }
+                    }
                  }
                  for (j in this.backgroundEntities) {
                      if (this.backgroundEntities[j] instanceof t[i]) {
@@ -180,5 +339,11 @@
  var Subscribtion = function(entity, types, callback) {
      this.entity = entity;
      this.types = types;
+     this.callback = callback;
+ };
+
+ var UserInputSubscribtion = function(keyCode, entity, callback) {
+     this.keyCode = keyCode;
+     this.entity = entity;
      this.callback = callback;
  };
