@@ -123,6 +123,9 @@ this.Slider = function(x, y, label, value, max, leftCallback, rightCallback, eas
     this.onLeft = leftCallback;
     this.onRight = rightCallback;
     this.step = this.length / this.maxValue;
+    // this.updateToLevel = function(lavel) {
+    //     if (level )
+    // };
     this.updateToEasyLevel = function() {
         for (var i in this.components) {
             if (this.components[i] === sliderPoint) {

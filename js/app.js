@@ -13,20 +13,36 @@ window.onload = function() {
     var engine = new Engine();
     engine.load();
 
-    var Configuration = function(speed, enemyNum)  {
+    var SliderConfig = function(min, max, easy, medium, hard, nightmare) {
+        this.min = min;
+        this.current = min;
+        this.max = max;
+        this.easy = easy;
+        this.medium = medium;
+        this.hard = hard;
+        this.nightmare = nightmare;
+    };
+
+    var Configuration = function(speed, enemyNum, enemyDelay)  {
+        // enemy 
+        this.speedMin = 0;
+        this.speedMax = 14;
         this.speed = speed;
-        this.enemyNum = enemyNum;
         this.speedEasy = 3;
         this.speedMedium = 5;
-
         this.speedHard = 10;
-        this.speedNightmare = 11;
+        this.speedNightmare = 14;
 
+        this.enemyNum = enemyNum;
         this.enemyEasy = 5;
         this.enemyMedium = 10;
-
         this.enemyHard = 11;
         this.enemyNightmare = 12;
+
+        // not implemented
+        this.enemyDelay = enemyDelay;
+        this.enemyDalayEasy = 1;
+
 
 
         this.getSpeed = function() {
@@ -35,6 +51,10 @@ window.onload = function() {
         this.getEnemiesNum = function() {
             return this.enemyNum;
         };
+        this.getEnemyDelay = function() {
+            return this.enemyDelay;
+        };
+        // set level
         this.setEasyLevel = function() {
             this.speed = this.speedEasy;
             this.enemyNum = this.enemyEasy;
@@ -51,6 +71,7 @@ window.onload = function() {
             this.speed = this.speedNightmare;
             this.enemyNum = this.enemyNightmare;
         };
+
         this.setSpeed = function(speed) {
             this.speed = speed;
         };
@@ -91,7 +112,7 @@ window.onload = function() {
             return this.enemyNightmare;   
         };
     };
-    var config = new Configuration(3, 5);
+    var config = new Configuration(0, 5, 1);
 
     //setUpEntities();
     //setUpStartMenu();
@@ -150,10 +171,6 @@ window.onload = function() {
             for (var row = 0; row < NUM_ROWS - 1; row++) {
                 if ((row === 0 && col % 2 === 0) || (row === 7) || (row === 14)) {
                     engine.addEntityToScreen(new GrassBlock(col, row));
-                    if (col === 4 && row === 0) {
-                        engine.addEntityToScreen(new SelectorBlock(col, row), BACKGROUND_LAYER);
-                    }
-
                 } else if ((row === 0 && col % 2 !== 0) || (row > 0 && row < 7)) {
                     engine.addEntityToScreen(new WaterBlock(col, row), BACKGROUND_LAYER);
                 } else {
@@ -164,6 +181,37 @@ window.onload = function() {
 
         function getRundomNum(num) {
             return Math.round(Math.random() * num);
+        }
+
+        function getDiffRandomExits(qty) {
+            var result = [];
+            var number;
+            var counter = 0;
+            function isExisted(num, array) {
+                for (var i in array) {
+                    if (array[i] === num) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            while (counter < qty) {
+                number = getRundomNum(NUM_COLS);
+                number = (number % 2 === 0) ? number : number - 1;
+                if (!isExisted(number, result)) {
+                    result.push(number);
+                    counter ++;
+                }
+            }
+            return result;
+        }
+
+        // setup exits
+        var transportNum = 5;
+        var exitsX = getDiffRandomExits(transportNum);
+        console.log(exitsX);
+        for (var i = 0; i < transportNum; i++) {
+            engine.addEntityToScreen(new SelectorBlock(exitsX[i], 0), BACKGROUND_LAYER);
         }
 
         
@@ -199,16 +247,21 @@ window.onload = function() {
         for (var i = 0; i < config.getEnemiesNum(); i++) {
             speed = Math.random() * 2 + config.getSpeed();
             engine.addEntityToScreen(new Enemy(-1, i % 6 + 8, speed, delay, NUM_COLS), FOREGROUND_LAYER);
+            delay = Math.random() * 4 + config.getEnemyDelay();
+        }
+
+        // setup transport
+        for (var i = 0; i < 10; i++) {
+            speed = Math.random() * 2 + 2;
             if ((i % 6) % 2 === 0) {
                 engine.addEntityToScreen(new Mover(-1, i % 6 + 2, speed, delay, NUM_COLS), FOREGROUND_LAYER);   
             } else {
                 engine.addEntityToScreen(new CounterMover(NUM_COLS, i % 6 + 2, speed, delay, NUM_COLS), FOREGROUND_LAYER);
                 }
             delay = Math.random() * 4 + 1;
-        }
 
-        // setup transport
-        //for (var i = 0; i < config.getTransportNum(); i++) {}
+
+        }
 
         engine.addUserInputSubscribtion(new UserInputSubscribtion("up", player, player.moveUp.bind(player)));
         engine.addUserInputSubscribtion(new UserInputSubscribtion("down", player, player.moveDown.bind(player)));
