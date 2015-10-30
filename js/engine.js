@@ -10,15 +10,16 @@
   * Engine class translates game coordinates to pixels.
   */
  var Engine = function() {
-     var gridWidth = 51;
-     var gridHeight = 42;
-     var canvasWidth = 969;
-     var canvasHeight = 714;
+     var gridWidth = 40;//51;
+     var gridHeight = 33;//42;
+     var canvasWidth = 920;//969;
+     var canvasHeight = 680;//713//672;//714; numrows + 1 row for bonuses
      var lastTime;
      var canvas = document.getElementById("canvas");
      canvas.width = canvasWidth;
      canvas.height = canvasHeight;
      var ctx = canvas.getContext("2d");
+     this.on = true;
      this.layers = [
          [],
          [],
@@ -34,6 +35,45 @@
      this.emptyScreen = function() {
         this.screen.length = 0;
      };
+
+     this.screenBackup = [];
+     this.subscribtionsBackup = [];
+     this.userInputSubscribtionsBackup = [];
+
+     this.copyCurrentGameState = function() {
+        console.log(this.screen.length);
+        console.log(this.screenBackup.length);
+        copyArrays(this.screen, this.screenBackup);
+        console.log(this.screen.length);
+        console.log(this.screenBackup.length);
+
+        copyArrays(this.subscribtions, this.subscribtionsBackup);
+        copyArrays(this.userInputSubscribtions, this.userInputSubscribtionsBackup);
+     };
+
+     this.pasteCurrentGameState = function() {
+        console.log(this.screen.length);
+        console.log(this.screenBackup.length);
+        copyArrays(this.screenBackup, this.screen);
+        console.log(this.screen.length);
+        console.log(this.screenBackup.length);
+
+        copyArrays(this.subscribtionsBackup, this.subscribtions);
+        copyArrays(this.userInputSubscribtionsBackup, this.userInputSubscribtions);
+
+        // empty backup
+        this.screenBackup.length = 0;
+        this.subscribtionsBackup.length = 0;
+        this.userInputSubscribtionsBackup.length = 0;
+
+     };
+
+     function copyArrays(array1, array2) {
+        for (var i in array1) {
+            array2.push(array1[i]);
+        }
+     }
+
 
 
      this.handleUserInput = function(keyCode, numRows, numCols) {
@@ -85,15 +125,15 @@
 
      this.load = function() {
          Resources.load([
-             'images/stone-block_small.png',
-             'images/water-block_small.png',
-             'images/grass-block_small.png',
-             'images/enemy-bug_small.png',
-             'images/char-boy_small.png',
-             'images/log_small.png',
-             'images/star_small.png',
-             'images/heart_small.png',
-             'images/gem-blue_small.png',
+             'images/stone-block_small_1.png',
+             'images/water-block_small_1.png',
+             'images/grass-block_small_1.png',
+             'images/enemy-bug_small_1.png',
+             'images/char-boy_small_1.png',
+             'images/log_small_1.png',
+             'images/lock.png',
+             'images/heart_small_1.png',
+             'images/gem-blue_small_1.png',
              'images/gem-green_small.png',
              'images/gem-orange_small.png',
              'images/key_small.png'
@@ -105,12 +145,16 @@
      this.start = function() {
          var now = Date.now();
          var dt = (now - lastTime) / 1000.0;
+         if (this.on) {
          this.update(dt);
+         } 
          this.render();
          this.checkCollision();
          this.checkTimer(dt);
          lastTime = now;
+        
          requestAnimationFrame(this.start.bind(this));
+        
      };
 
      this.update = function(dt) {
@@ -132,6 +176,12 @@
          ctx.fillStyle = color;
          ctx.fillRect(x * gridWidth, y * gridHeight, w * gridWidth, h * gridHeight);
      };
+
+     this.drawFullScreenRect = function(color) {
+        ctx.fillStyle = color;
+        ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+     };
+
 
      this.drawText = function(x, y, text, color, font) {
          ctx.fillStyle = color;
@@ -254,4 +304,3 @@
     this.callback = callback;
  };
 
- 
