@@ -93,54 +93,76 @@ var GrassBlock = function(x, y) {
 var SelectorBlock = function(x, y) {
     SpriteEntity.call(this, x, y, sprite('images/lock.png', 5, 25, defaultBoundingBox()));
 };
-var BlueGem = function(x, y) {
-    SpriteEntity.call(this, x, y, sprite('images/gem-blue_small_1.png', 10, 10, defaultBoundingBox())); 
-    //SpriteEntity.call(this, x, y, simpleSprite('images/gem-blue_small.png')); 
-    this.changePosition = function(numCols, numRols) {
-        this.x = randValue(numCols);
-        this.y = randValue(numCols);
-    }; 
+var Gem = function(x, y, numCols, numRows, sprite, bonusNumber) {
+    SpriteEntity.call(this, x, y, sprite); 
+    this.visible = false;
+    this.initialDelay = randValue(5);
+    this.delay = this.initialDelay;
+    this.initialLifeTime = 15;
+    this.lifeTime = this.initialLlifeTime;
+    this.bonusNumber = bonusNumber;
     function randValue(num) {
         return Math.round(Math.random() * num);
     }
-};
-var GreenGem = function(x, y) {
-    SpriteEntity.call(this, x, y, sprite('images/gem-green_small.png', 10, -20, defaultBoundingBox())); 
-    this.changePosition = function(numCols, numRols) {
+    this.changePosition = function() {
+        this.visible = false;
         this.x = randValue(numCols);
-        this.y = randValue(numCols);
+        this.y = randValue(numRows);
+        this.delay = this.initialDelay;
+        this.lifeTime = this.initialLifeTime;
     }; 
-    function randValue(num) {
-        return Math.round(Math.random() * num);
-    }
+    this.update = function(dt) {
+        if (this.delay > 0) {
+            this.delay -= dt;
+        } else {
+            this.visible = true;
+            if (this.lifeTime > 0) {
+                this.lifeTime -= dt;
+            } else {
+                this.changePosition();
+            }
+        }
+    };
+    this.render = function(engine) {
+        if (this.visible) {
+            engine.drawImage(this.sprite, this.x, this.y);
+        }
+    };
 };
-var OrangeGem = function(x, y) {
-    SpriteEntity.call(this, x, y, sprite('images/gem-orange_small.png', 10, -20, defaultBoundingBox())); 
-    this.changePosition = function(numCols, numRols) {
-        this.x = randValue(numCols);
-        this.y = randValue(numCols);
-    }; 
-    function randValue(num) {
-        return Math.round(Math.random() * num);
-    }
+
+var BlueGem = function(x, y, numCols, numRows) {
+    Gem.call(this, x, y, numCols, numRows, sprite('images/gem-blue_new.png', 10, 10, defaultBoundingBox()), 10);
 };
+var GreenGem = function(x, y, numCols, numRows) {
+    Gem.call(this, x, y, numCols, numRows, sprite('images/gem-green_new.png', 10, 10, defaultBoundingBox()), 20);
+};
+var OrangeGem = function(x, y, numCols, numRows) {
+    Gem.call(this, x, y, numCols, numRows, sprite('images/gem-orange_new.png', 10, 10, defaultBoundingBox()), 30);
+};
+
 var Key = function(x, y) {
-    SpriteEntity.call(this, x, y, simpleSprite('images/key_small.png')); 
-    this.moveToPlayerPanel = function(numCols, numRols) {
-        this.x = 8;
-        this.y = 16;
-    }; 
-    function randValue(num) {
-        return Math.round(Math.random() * num);
-    }
+    SpriteEntity.call(this, x, y, sprite('images/new.png', 0, 5, boundingBox(0, 0.5, 1, 1)));
+    this.isNotPicked = true;
+    this.changeState = function() {
+        this.x = 9;
+        this.y = 19;
+    };
+    // this.render = function(engine) {
+    //     if (this.isNotPicked) {
+    //         engine.drawImage(this.sprite, this.x, this.y);
+    //     }
+    // };
+    
 };
 var Enemy = function(x, y, speed, delay, numCols) {
-    SpriteEntity.call(this, x, y, sprite('images/enemy-bug_small_1.png', 0, -10, defaultBoundingBox()));
+    // SpriteEntity.call(this, x, y, sprite('images/enemy-bug_small_1.png', 0, -10, defaultBoundingBox()));
+    SpriteEntity.call(this, x, y, sprite('images/enemy-bug_small_1.png', 0, -10, boundingBox(0, 0.5, 1, 1)));
     this.initialX = x;
     this.isVisible = false;
     this.delay = delay;
     this.initDelay = delay;
     this.speed = speed;
+    this.wasFloating = false;
     this.update = function(dt) {
         if (this.delay > 0) {
             this.delay -= dt;
@@ -157,6 +179,7 @@ var Enemy = function(x, y, speed, delay, numCols) {
     this.render = function(engine) {
         if (this.isVisible === true) {
             engine.drawImage(this.sprite, this.x, this.y); // TODO: use method in superclass
+            // engine.drawRect(this.x + this.sprite.bbox.x, this.y + this.sprite.bbox.y, this.sprite.bbox.w, this.sprite.bbox.h, "black"); 
         }
     };
 };
@@ -167,10 +190,10 @@ var Player = function(x, y, numberOfLifes) {
     this.numberOfLifes = numberOfLifes;
     this.score = 0;
     this.isKeyObtained = false;
+    this.inWater = false;
 
     this.increaseScore = function(number) {
         this.score = this.score + number;
-        console.log(this.score);
     };
 
     this.changePositionToInitial = function() {
@@ -188,38 +211,61 @@ var Player = function(x, y, numberOfLifes) {
     };
 
     this.moveUp = function(numCols, numRows) {
+        // console.log(this.x);
+        
+        if (this.wasFloating) {
+            this.x = Math.floor(this.x);
+            this.wasFloating = false;
+        }
+        // console.log(this.x);
+        // console.log(this.y);
         if (this.y !== 0) {
             this.y = this.y - 1;
         }
+        //console.log(this.y);
     };
     this.moveDown = function(numCols, numRows) {
-        console.log(numRows);
-        console.log(this.y);
+                if (this.wasFloating) {
+            this.x = Math.floor(this.x);
+            this.wasFloating = false;
+        }
+        
         if (this.y !== numRows - 1) {
             this.y = this.y + 1;
         }
+        //console.log(this.y);
     };
     this.moveLeft = function(numCols, numRows) {
+        if (this.wasFloating) {
+            this.wasFloating = false;
+        }
         if (this.x !== 0) {
             this.x = this.x - 1;
         }
     };
     this.moveRight = function(numCols, numRows) {
+        if (this.wasFloating) {
+            this.wasFloating = false;
+        }
         if (this.x !== numCols - 1) {
             this.x = this.x + 1;
         }
     };
     this.floating = function(entity) {
+        this.wasFloating = true;
         this.x = entity.x;
-        this.y = this.y;
-        this.sprite.dy = -50;
+        this.y = entity.y;
+        //this.sprite.dy = -50;
     };
     this.obtainKey = function(key) {
-        console.log("key");
         this.isKeyObtained = true;
-        key.moveToPlayerPanel();
+        //key.moveToPlayerPanel();
 
     };
+    // test
+    // this.render = function(engine) {
+    //     engine.drawRect(this.x + this.sprite.bbox.x, this.y + this.sprite.bbox.y, this.sprite.bbox.w, this.sprite.bbox.h, "black");
+    // };
 
 };
 var Life = function(x, y, count) {
@@ -237,59 +283,81 @@ var Life = function(x, y, count) {
     };
 
 };
-// var Life = function(x, y, speed, delay, numCols) {
-//     SpriteEntity.call(this, x, y, sprite('images/heart_small_1.png', 0, 5, defaultBoundingBox()));
-//     this.isVisible = true;
-//     this.render = function(engine) {
-//         if (this.isVisible) {
-//             engine.drawImage(this.sprite, this.x, this.y);
-//         } else {
-//             engine.drawRect(this.x, this.y, 1, 1);
-//         }
-//     };
 
-// };
-var Mover = function(x, y, speed, delay, numCols) {
-    SpriteEntity.call(this, x, y, sprite('images/log_small_1.png', 0, 0, defaultBoundingBox()));
+var KeyCounter = function(x, y, count) {
+    CompositeEntity.call(this, x, y);
+    this.count = count;
+    this.text = this.count;
+    this.add(new SpriteEntity(this.x, this.y, sprite('images/new.png', 0, 5, boundingBox(0, 0.5, 1, 1))));
+    this.displayedText = new TextEntity(x + 1, y + 1, this.text, this.color, "25px Gloria Hallelujah");
+
+    this.add(this.displayedText);
+    this.changeCounter = function() {
+        this.count --;
+        this.displayedText.text = this.count;     
+    };
+
+};
+
+var ScoreCounter = function(x, y) {
+    CompositeEntity.call(this, x, y);
+    this.count = 0;
+    this.text = "Score: " + this.count;
+    this.displayedText = new TextEntity(x + 1, y + 1, this.text, this.color, "25px Gloria Hallelujah");
+    this.add(this.displayedText);
+    this.changeCounter = function(num) {
+        this.count += num;
+        this.displayedText.text = "Score: " + this.count;
+    };
+
+};
+
+var TransportPart = function(x, y) {
+    SpriteEntity.call(this, x, y, sprite('images/log_small_1.png', 0, 35, boundingBox(0.3, 0, 0.3, 0.3)));
+};
+
+var Transport = function(x, y, numCols, delay, speed, length) {
+    CompositeEntity.call(this, x, y);
+    // this.add(new TransportPart(x, y));
+    // this.add(new TransportPart(x - 1, y));
+    // this.add(new TransportPart(x - 2, y));
+
+    for (var i = 0; i < length; i++) {
+        this.add(new TransportPart(x - i, y));
+    }
+
     this.initialX = x;
     this.isVisible = false;
     this.delay = delay;
     this.initDelay = delay;
     this.speed = speed;
+    this.changeComponentsX = function(x) {
+        var first;
+        for (var j = 0; j < this.components.length; j ++) {
+            if (j === 0) {
+                first = this.components[j];
+                first.x = x;
+            } else {
+                this.components[j].x = first.x - j;
+            }
+        }
+    };
     this.update = function(dt) {
         if (this.delay > 0) {
             this.delay -= dt;
         } else {
             this.isVisible = true;
-            this.x = this.x + dt * this.speed;
-            if (this.x >= numCols) {
+            this.x += dt * this.speed;
+            this.changeComponentsX(this.x);
+            
+            if ((this.speed > 0 && this.x >= numCols + this.components.length) || (this.speed < 0 && this.x < -1)) {
+                this.changeComponentsX(this.initialX);
                 this.x = this.initialX;
                 this.delay = this.initDelay;
                 this.isVisible = false;
             }
         }
     };
-    this.render = function(engine) {
-        if (this.isVisible === true) {
-            engine.drawImage(this.sprite, this.x, this.y);
-        }
-    };
-};
-var CounterMover = function(x, y, speed, delay, numCols) {
-    Mover.call(this, x, y, speed, delay, numCols);
-    this.update = function(dt) {
-        if (this.delay > 0) {
-            this.delay -= dt;
-        } else {
-            this.isVisible = true;
-            this.x = this.x - dt * this.speed;
-            if (this.x < 0) {
-                this.x = this.initialX;
-                this.delay = this.initDelay;
-                this.isVisible = false;
-            }
-        }
-};
 };
 
 var LineEntity = function(x, y, x1, y1, width, color) {

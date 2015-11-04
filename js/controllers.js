@@ -30,6 +30,8 @@ var MenuController = function(engine, COLS, ROWS) {
 var GameController = function(engine, width, height) {
     var player;
     var lifeCounter;
+    var keyCounter;
+    var scoreCounter;
     var LIFE_NUMBER = 3;
     var NUM_GEMS = 3;
 
@@ -73,12 +75,30 @@ var GameController = function(engine, width, height) {
     }
 
     function onWin() {
-        //if (player.isKeyObtained === true) {
+        if (player.isKeyObtained === true) {
             engine.emptyScreen();
             engine.deleteSubscriptions();
             engine.deleteUserInputSubscriptions();
             win();
-        //}
+        }
+    }
+
+    function onKeyPickedUp(key) {
+        player.obtainKey();
+        keyCounter.changeCounter();
+        key.changeState();
+    }
+
+    function onGemPickedUp(gem) {
+        scoreCounter.changeCounter(gem.bonusNumber);
+        gem.changePosition();
+    }
+
+    function onWater() {
+        player.inWater = true;
+        if (!player.wasFloating) {
+            onCollision();
+        }
     }
 
     function setUpEntities() {
@@ -139,9 +159,12 @@ var GameController = function(engine, width, height) {
         }
 
         
-        var blueGem = new BlueGem(getRundomNum(width), getRundomNum(height));
-        engine.addEntityToScreen(blueGem);
-        engine.addSubscribtion(new Subscribtion(blueGem, [Player], blueGem.changePosition.bind(blueGem, width, height)));
+        // var blueGem = new BlueGem(5, 5, width - 1, height - 2);
+        engine.addEntityToScreen(new BlueGem(5, 5, width - 1, height - 2));
+
+        engine.addEntityToScreen(new GreenGem(5, 5, width - 1, height - 2));
+        engine.addEntityToScreen(new OrangeGem(5, 5, width - 1, height - 2));
+        //engine.addSubscribtion(new Subscribtion(blueGem, [Player], blueGem.changePosition.bind(blueGem, width, height)));
 
         // var greenGem = new GreenGem(getRundomNum(NUM_COLS), getRundomNum(NUM_ROWS));
         // engine.addEntityToScreen(greenGem, BACKGROUND_LAYER);
@@ -150,17 +173,22 @@ var GameController = function(engine, width, height) {
         // var orangeGem = new OrangeGem(getRundomNum(NUM_COLS), getRundomNum(NUM_ROWS));
         // engine.addEntityToScreen(orangeGem, BACKGROUND_LAYER);
         // engine.addSubscribtion(new Subscribtion(orangeGem, [Player], orangeGem.changePosition.bind(orangeGem, NUM_COLS, NUM_ROWS)));
-
-        // var key = new Key(getRundomNum(NUM_COLS), getRundomNum(NUM_ROWS));
-        // engine.addEntityToScreen(key, BACKGROUND_LAYER);
-        //engine.addSubscribtion(new Subscribtion(key, [Player], key.moveToPlayerPanel.bind(key))); 
+        var key = new Key(5, 17);
+        // var key = new Key(getRundomNum(width), getRundomNum(height));
+        engine.addEntityToScreen(key);
+        //engine.addSubscribtion(new Subscribtion(key, [Player], key.changeState.bind(key))); 
         lifeCounter = new Life(0, 19, LIFE_NUMBER);
         engine.addEntityToScreen(lifeCounter);
+
+        keyCounter = new KeyCounter(9, 19, exitCount);
+        engine.addEntityToScreen(keyCounter);
+
+        scoreCounter = new ScoreCounter(15, 19);
+        engine.addEntityToScreen(scoreCounter);
     }
 
     var setUpForeground = function() { 
-        player = new Player(Math.floor(width / 2), height - 2, LIFE_NUMBER);
-        engine.addEntityToScreen(player);
+        
 
         var enemySpeed = assertDefined(config.enemy.speed.value); 
         var enemyCount = assertDefined(config.enemy.num.value);
@@ -179,17 +207,23 @@ var GameController = function(engine, width, height) {
         var transportSpeed = assertDefined(config.transport.speed.value); 
         var transportCount = assertDefined(config.transport.num.value);
         var transportDelay = assertDefined(config.transport.delay.value);
+
+        
+
         for (var i = 0; i < transportCount; i++) {
             speed = Math.random() * 2 + transportSpeed;
-            if ((i % 6) % 2 === 0) {
-                engine.addEntityToScreen(new Mover(-1, i % 7 + 2, speed, delay, width));   
+            if ((i % 7) % 2 === 0) {
+                engine.addEntityToScreen(new Transport(-1, i % 7 + 1, width, delay, speed, 3));
             } else {
-                engine.addEntityToScreen(new CounterMover(width, i % 7 + 2, speed, delay, width));
+                engine.addEntityToScreen(new Transport(width + 2, i % 7 + 1, width, delay, -1 * speed, 2));
                 }
             delay = Math.random() * 4 + transportDelay;
 
 
         }
+
+        player = new Player(Math.floor(width / 2), height - 2, LIFE_NUMBER);
+        engine.addEntityToScreen(player);
 
         engine.addUserInputSubscribtion(new UserInputSubscribtion("up", player, player.moveUp.bind(player, width, height - 1)));
         engine.addUserInputSubscribtion(new UserInputSubscribtion("down", player, player.moveDown.bind(player, width, height - 1)));
@@ -197,14 +231,13 @@ var GameController = function(engine, width, height) {
         engine.addUserInputSubscribtion(new UserInputSubscribtion("right", player, player.moveRight.bind(player, width, height - 1)));
         engine.addUserInputSubscribtion(new UserInputSubscribtion("esc", player, pause));
         engine.addSubscribtion(new Subscribtion(player, [Enemy], onCollision));
-        //engine.addSubscribtion(new Subscribtion(player, [WaterBlock], onCollision));
         engine.addSubscribtion(new Subscribtion(player, [SelectorBlock], onWin));
-        engine.addSubscribtion(new Subscribtion(player, [BlueGem], player.increaseScore.bind(player, 10)));
-        engine.addSubscribtion(new Subscribtion(player, [Mover], player.floating.bind(player)));
-        engine.addSubscribtion(new Subscribtion(player, [CounterMover], player.floating.bind(player)));
-        engine.addSubscribtion(new Subscribtion(player, [Key], player.obtainKey.bind(player))); //doesn't work with key [Player]
+        engine.addSubscribtion(new Subscribtion(player, [BlueGem, GreenGem, OrangeGem], onGemPickedUp));
+        engine.addSubscribtion(new Subscribtion(player, [TransportPart], player.floating.bind(player)));
+        engine.addSubscribtion(new Subscribtion(player, [WaterBlock], onWater));
+        engine.addSubscribtion(new Subscribtion(player, [Key], onKeyPickedUp));
 
-        var timer = new Timer(4, 20, 30);
+        var timer = new Timer(4, 20, 180);
         engine.addEntityToScreen(timer);
         engine.addTimeSubscribtion(new TimeSubscribtion(timer, 0, resetGame));
     }
@@ -340,7 +373,6 @@ var ConfigMenuController = function(engine, gameController) {
             //menuController.openStartMenu();
         }
         var resumeButtonCallback = function() {
-            console.log("resume");
             engine.emptyScreen();
             engine.deleteSubscriptions();
             engine.deleteUserInputSubscriptions();
@@ -354,7 +386,6 @@ var ConfigMenuController = function(engine, gameController) {
             engine.deleteSubscriptions();
             engine.deleteUserInputSubscriptions();
 
-            console.log(engine.on);
             var pauseMenu = new PauseMenu(resumeButtonCallback, startMenuButtonCallback);
             engine.addEntityToScreen(pauseMenu);
             engine.addUserInputSubscribtion(new UserInputSubscribtion("enter", pauseMenu, pauseMenu.handleEnter.bind(pauseMenu)));

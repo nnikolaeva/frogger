@@ -41,23 +41,13 @@
      this.userInputSubscribtionsBackup = [];
 
      this.copyCurrentGameState = function() {
-        console.log(this.screen.length);
-        console.log(this.screenBackup.length);
         copyArrays(this.screen, this.screenBackup);
-        console.log(this.screen.length);
-        console.log(this.screenBackup.length);
-
         copyArrays(this.subscribtions, this.subscribtionsBackup);
         copyArrays(this.userInputSubscribtions, this.userInputSubscribtionsBackup);
      };
 
      this.pasteCurrentGameState = function() {
-        console.log(this.screen.length);
-        console.log(this.screenBackup.length);
         copyArrays(this.screenBackup, this.screen);
-        console.log(this.screen.length);
-        console.log(this.screenBackup.length);
-
         copyArrays(this.subscribtionsBackup, this.subscribtions);
         copyArrays(this.userInputSubscribtionsBackup, this.userInputSubscribtions);
 
@@ -134,9 +124,12 @@
              'images/lock.png',
              'images/heart_small_1.png',
              'images/gem-blue_small_1.png',
-             'images/gem-green_small.png',
-             'images/gem-orange_small.png',
-             'images/key_small.png'
+             'images/gem-blue_new.png',
+             'images/gem-green_new.png',
+             'images/gem-orange_new.png',
+             'images/key_small_1.png',
+             'images/new.png',
+             'images/newlog.png',
          ]);
          lastTime = Date.now();
          Resources.onReady(this.start.bind(this));
@@ -257,13 +250,23 @@
              e = s.entity;
              t = s.types;
              var candidates = [];
+             var element;
              for (var i in t) {
                  for (var k = 0; k < this.screen.length; k++) {
+                    element = this.screen[k];
+
                      //currentLayer = this.layers[k];
                      //for (var j = 0; j < currentLayer.length; j++) {
-                         if (this.screen[k] instanceof t[i]) {
-                             candidates.push(this.screen[k]);
+                         if (element instanceof t[i]) {
+                             candidates.push(element);
                          }
+                         // if (typeof this.screen[k].components !== "undefined") {
+                            for (l in element.components) {
+                                if (element.components[l] instanceof t[i]) {
+                                    candidates.push(element.components[l]);
+                                }
+                            }
+                         // }
                      //}
                  }
                  for (j in this.backgroundEntities) {

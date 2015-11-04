@@ -2,7 +2,7 @@ var config = {
         "enemy": {
             "speed": {
                 "range": [0, 14],
-                "value": 10,
+                "value": 1,
                 "step": 1,
                 "level": [2, 6, 10, 14]
             },
@@ -22,13 +22,13 @@ var config = {
         "transport": {
             "speed": {
                 "range": [0, 14],
-                "value": 7,
+                "value": 3,
                 "step": 1,
                 "level": [2, 6, 10, 14]
             },
             "num": {
                 "range": [0, 20],
-                "value": 10,
+                "value": 25,
                 "step": 1,
                 "level": [2, 6, 10, 14]
             },
@@ -63,9 +63,7 @@ var config = {
                 for (var j in entity) {
                     if (entity.hasOwnProperty(j)) {
                         var conf = entity[j];
-                        console.log(conf.value);
                         conf.value = conf.level[levelNum];
-                        console.log(conf.value);
                     }
                 }
 
