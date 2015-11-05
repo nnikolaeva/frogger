@@ -27,6 +27,12 @@
         userInputSubscribtions: [],
         timeSubscribtions: []
      };
+     this.backupScreen = {
+        entities: [],
+        subscribtions: [],
+        userInputSubscribtions: [],
+        timeSubscribtions: []
+     };
 
      this.addEntityToScreen = function(entity) {
          this.screen.entities.push(entity);
@@ -36,16 +42,35 @@
          this.screen.entities.length = 0;
          this.screen.subscribtions.length = 0;
          this.screen.userInputSubscribtions.length = 0;
+         this.screen.timeSubscribtions.length = 0;
      };
 
-     this.backupScreen;
+     this.emptyBackupScreen = function() {
+         this.backupScreen.entities.length = 0;
+         this.backupScreen.subscribtions.length = 0;
+         this.backupScreen.userInputSubscribtions.length = 0;
+         this.backupScreen.timeSubscribtions.length = 0;
+     }
+
      this.copyCurrentGameState = function() {
-         this.backupScreen = this.screen;
-     };
+         copyScreen(this.screen, this.backupScreen);
 
+     };
+     // copy all elements from array1 to array2
+     function copyArray(array1, array2) {
+        for (var i in array1) {
+            array2.push(array1[i]);
+        }
+     }
+     // copy all elements from scr1 to scr2
+     function copyScreen(scr1, scr2) {
+        for (var key in scr1) {
+            copyArray(scr1[key], scr2[key]);
+        }
+     }
      this.pasteCurrentGameState = function() {
-         this.screen = this.backupScreen;
-         this.backupScreen = {};
+         copyScreen(this.backupScreen, this.screen);
+         this.emptyBackupScreen();
      };
 
      this.handleUserInput = function(keyCode, numRows, numCols) {
@@ -92,6 +117,7 @@
              'images/key_small_1.png',
              'images/new.png',
              'images/newlog.png',
+             'images/heart_small_new.png'
          ]);
          lastTime = Date.now();
          Resources.onReady(this.start.bind(this));

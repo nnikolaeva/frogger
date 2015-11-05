@@ -88,17 +88,17 @@ var GameController = function(engine, width, height) {
         gem.changePosition();
     }
 
+    function onLifePickedUp(life) {
+        player.numberOfLifes ++;
+        lifeCounter.increaseCount();
+        life.changePosition();
+    }
+
     function onWater() {
         player.inWater = true;
         if (!player.wasFloating) {
             onCollision();
         }
-    }
-
-    function setUpEntities() {
-        setUpBackground();
-        setUpForeground(config);
-        setUpMenu();
     }
 
     function getRundomNum(num) {
@@ -151,9 +151,9 @@ var GameController = function(engine, width, height) {
         }
         // setup gems
         for (var i = 0; i < NUM_GEMS; i++) {
-            engine.addEntityToScreen(new BlueGem(5, 5, width - 1, height - 2));
-            engine.addEntityToScreen(new GreenGem(5, 5, width - 1, height - 2));
-            engine.addEntityToScreen(new OrangeGem(5, 5, width - 1, height - 2));
+            engine.addEntityToScreen(new BlueGem(width - 1, height - 2));
+            engine.addEntityToScreen(new GreenGem(width - 1, height - 2));
+            engine.addEntityToScreen(new OrangeGem(width - 1, height - 2));
         }
 
         var KeyCount = assertDefined(config.key.num.value);
@@ -161,7 +161,7 @@ var GameController = function(engine, width, height) {
             engine.addEntityToScreen(new Key(getRundomNum(width - 1), getRundomNum(height - 2)));    
         }
         
-        lifeCounter = new Life(0, 19, LIFE_NUMBER);
+        lifeCounter = new LifeCounter(0, 19, LIFE_NUMBER);
         engine.addEntityToScreen(lifeCounter);
 
         keyCounter = new KeyCounter(9, 19, KeyCount);
@@ -169,6 +169,8 @@ var GameController = function(engine, width, height) {
 
         scoreCounter = new ScoreCounter(15, 19);
         engine.addEntityToScreen(scoreCounter);
+
+        engine.addEntityToScreen(new Life(width - 1, height - 2));
     }
 
     var setUpForeground = function() {
@@ -204,8 +206,9 @@ var GameController = function(engine, width, height) {
 
         }
 
-        player = new Player(Math.floor(width / 2), height - 2, LIFE_NUMBER);
+        player = new Player(Math.floor(width / 2), height - 2, LIFE_NUMBER, width, height);
         engine.addEntityToScreen(player);
+        player.setfloatOutOfScreenCallback(onCollision);
 
         engine.addUserInputSubscribtion(new UserInputSubscribtion("up", player, player.moveUp.bind(player, width, height - 1)));
         engine.addUserInputSubscribtion(new UserInputSubscribtion("down", player, player.moveDown.bind(player, width, height - 1)));
@@ -215,6 +218,7 @@ var GameController = function(engine, width, height) {
         engine.addSubscribtion(new Subscribtion(player, [Enemy], onCollision));
         engine.addSubscribtion(new Subscribtion(player, [SelectorBlock], onWin));
         engine.addSubscribtion(new Subscribtion(player, [BlueGem, GreenGem, OrangeGem], onGemPickedUp));
+        engine.addSubscribtion(new Subscribtion(player, [Life], onLifePickedUp));
         engine.addSubscribtion(new Subscribtion(player, [TransportPart], player.floating.bind(player)));
         engine.addSubscribtion(new Subscribtion(player, [WaterBlock], onWater));
         engine.addSubscribtion(new Subscribtion(player, [Key], onKeyPickedUp));
@@ -325,20 +329,21 @@ var WinMenuController = function(engine, gameController, levelMenuController) {
 };
 
 var PauseMenuController = function(engine, startMenuController) {
+    var resumeButtonCallback = function() {
+        console.log("resume");
+        engine.emptyScreen();
+        engine.pasteCurrentGameState();
+        engine.on = true;
+    };
     var startMenuButtonCallback = function() {
         engine.emptyScreen();
         engine.on = true;
         startMenuController.setUpStartMenu();
     }
-    var resumeButtonCallback = function() {
-        engine.emptyScreen();
-        engine.pasteCurrentGameState();
-        engine.on = true;
-
-    };
     this.setUpPauseMenu = function() {
         engine.on = false;
         engine.copyCurrentGameState();
+        engine.emptyScreen();
         var pauseMenu = new PauseMenu(resumeButtonCallback, startMenuButtonCallback);
         engine.addEntityToScreen(pauseMenu);
         engine.addUserInputSubscribtion(new UserInputSubscribtion("enter", pauseMenu, pauseMenu.handleEnter.bind(pauseMenu)));

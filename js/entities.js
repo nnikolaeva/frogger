@@ -93,14 +93,20 @@ var GrassBlock = function(x, y) {
 var SelectorBlock = function(x, y) {
     SpriteEntity.call(this, x, y, sprite('images/lock.png', 5, 25, defaultBoundingBox()));
 };
-var Gem = function(x, y, numCols, numRows, sprite, bonusNumber) {
-    SpriteEntity.call(this, x, y, sprite);
+var Bonus = function(sprite, numCols, numRows) {
+    this.x = randValue(numCols);
+    this.y = randValue(numRows);
+    SpriteEntity.call(this, this.x, this.y, sprite);
     this.visible = false;
     this.initialDelay = randValue(5);
     this.delay = this.initialDelay;
     this.initialLifeTime = 15;
     this.lifeTime = this.initialLlifeTime;
-    this.bonusNumber = bonusNumber;
+
+    this.setDelay = function(delay) {
+        this.initialDelay = delay;
+        this.delay = delay;
+    };
 
     function randValue(num) {
         return Math.round(Math.random() * num);
@@ -131,15 +137,36 @@ var Gem = function(x, y, numCols, numRows, sprite, bonusNumber) {
     };
 };
 
-var BlueGem = function(x, y, numCols, numRows) {
-    Gem.call(this, x, y, numCols, numRows, sprite('images/gem-blue_new.png', 10, 10, defaultBoundingBox()), 10);
+var BlueGem = function(numCols, numRows) {
+    Bonus.call(this, sprite('images/gem-blue_new.png', 10, 10, defaultBoundingBox()), numCols, numRows);
+    this.bonusNumber = 10;
 };
-var GreenGem = function(x, y, numCols, numRows) {
-    Gem.call(this, x, y, numCols, numRows, sprite('images/gem-green_new.png', 10, 10, defaultBoundingBox()), 20);
+var GreenGem = function(numCols, numRows) {
+    Bonus.call(this, sprite('images/gem-green_new.png', 10, 10, defaultBoundingBox()), numCols, numRows);
+    this.bonusNumber = 20;
 };
-var OrangeGem = function(x, y, numCols, numRows) {
-    Gem.call(this, x, y, numCols, numRows, sprite('images/gem-orange_new.png', 10, 10, defaultBoundingBox()), 30);
+var OrangeGem = function(numCols, numRows) {
+    Bonus.call(this, sprite('images/gem-orange_new.png', 10, 10, defaultBoundingBox()), numCols, numRows);
+    this.bonusNumber = 30;
 };
+var Life = function(numCols, numRows) {
+    Bonus.call(this, sprite('images/heart_small_new.png', 10, 10, defaultBoundingBox()), numCols, numRows);
+    this.setDelay(10);
+
+};
+
+// var BlueGem = function(x, y, numCols, numRows) {
+//     Gem.call(this, x, y, numCols, numRows, sprite('images/gem-blue_new.png', 10, 10, defaultBoundingBox()), 10);
+// };
+// var GreenGem = function(x, y, numCols, numRows) {
+//     Gem.call(this, x, y, numCols, numRows, sprite('images/gem-green_new.png', 10, 10, defaultBoundingBox()), 20);
+// };
+// var OrangeGem = function(x, y, numCols, numRows) {
+//     Gem.call(this, x, y, numCols, numRows, sprite('images/gem-orange_new.png', 10, 10, defaultBoundingBox()), 30);
+// };
+// var Life = function(x, y, numCols, numRows) {
+//     Gem.call(this, x, y, numCols, numRows, sprite('images/heart_small_new.png', 10, 10, defaultBoundingBox()), 10);  
+// };
 
 var Key = function(x, y) {
     SpriteEntity.call(this, x, y, sprite('images/new.png', 0, 5, boundingBox(0, 0.5, 1, 1)));
@@ -177,7 +204,7 @@ var Enemy = function(x, y, speed, delay, numCols) {
         }
     };
 };
-var Player = function(x, y, numberOfLifes) {
+var Player = function(x, y, numberOfLifes, numCols, numRows) {
     SpriteEntity.call(this, x, y, sprite('images/char-boy_small_1.png', 0, -5, boundingBox(0.17, 0.36, 0.66, 0.46)));
     this.initialX = x;
     this.initialY = y;
@@ -185,6 +212,11 @@ var Player = function(x, y, numberOfLifes) {
     this.score = 0;
     this.isKeyObtained = false;
     this.inWater = false;
+    this.floatOutOfScreen;
+
+    this.setfloatOutOfScreenCallback = function(callback) {
+        this.floatOutOfScreen = callback;
+    };
 
     this.increaseScore = function(number) {
         this.score = this.score + number;
@@ -243,13 +275,16 @@ var Player = function(x, y, numberOfLifes) {
         this.wasFloating = true;
         this.x = entity.x;
         this.y = entity.y;
+        if (this.x < -1 || this.x > numCols) {
+            this.floatOutOfScreen();
+        }
     };
     this.obtainKey = function(key) {
         this.isKeyObtained = true;
 
     };
 };
-var Life = function(x, y, count) {
+var LifeCounter = function(x, y, count) {
     CompositeEntity.call(this, x, y);
     this.count = count;
     this.text = "x " + this.count;
@@ -257,7 +292,11 @@ var Life = function(x, y, count) {
     this.displayedText = new TextEntity(x + 1, y + 1, this.text, this.color, "25px Gloria Hallelujah");
     this.add(this.displayedText);
     this.decreaseCount = function() {
-        this.count--;
+        this.count --;
+        this.displayedText.text = "x " + this.count;
+    };
+    this.increaseCount = function() {
+        this.count ++;
         this.displayedText.text = "x " + this.count;
     };
 
