@@ -20,57 +20,42 @@
      canvas.height = canvasHeight;
      var ctx = canvas.getContext("2d");
      this.on = true;
-     this.layers = [
-         [],
-         [],
-         []
-     ];
 
-     this.screen = [];
+     this.screen = {
+        entities: [],
+        subscribtions: [],
+        userInputSubscribtions: [],
+        timeSubscribtions: []
+     };
 
      this.addEntityToScreen = function(entity) {
-         this.screen.push(entity);
+         this.screen.entities.push(entity);
      };
 
      this.emptyScreen = function() {
-         this.screen.length = 0;
+         this.screen.entities.length = 0;
+         this.screen.subscribtions.length = 0;
+         this.screen.userInputSubscribtions.length = 0;
      };
 
-     this.screenBackup = [];
-     this.subscribtionsBackup = [];
-     this.userInputSubscribtionsBackup = [];
-
+     this.backupScreen;
      this.copyCurrentGameState = function() {
-         copyArrays(this.screen, this.screenBackup);
-         copyArrays(this.subscribtions, this.subscribtionsBackup);
-         copyArrays(this.userInputSubscribtions, this.userInputSubscribtionsBackup);
+         this.backupScreen = this.screen;
      };
 
      this.pasteCurrentGameState = function() {
-         copyArrays(this.screenBackup, this.screen);
-         copyArrays(this.subscribtionsBackup, this.subscribtions);
-         copyArrays(this.userInputSubscribtionsBackup, this.userInputSubscribtions);
-
-         // empty backup
-         this.screenBackup.length = 0;
-         this.subscribtionsBackup.length = 0;
-         this.userInputSubscribtionsBackup.length = 0;
-
+         this.screen = this.backupScreen;
+         this.backupScreen = {};
      };
-
-     function copyArrays(array1, array2) {
-         for (var i in array1) {
-             array2.push(array1[i]);
-         }
-     }
 
      this.handleUserInput = function(keyCode, numRows, numCols) {
          var sub;
-         for (var i = 0; i < this.userInputSubscribtions.length; i++) {
-             sub = this.userInputSubscribtions[i];
-             for (var j in this.screen) {
-                 if (this.screen[j] === sub.entity && keyCode === sub.keyCode) {
-                     sub.callback(this.screen[j]);
+         var length = this.screen.userInputSubscribtions.length;
+         for (var i = 0; i < length; i++) {
+             sub = this.screen.userInputSubscribtions[i];
+             for (var j in this.screen.entities) {
+                 if (this.screen.entities[j] === sub.entity && keyCode === sub.keyCode) {
+                     sub.callback(this.screen.entities[j]);
                  }
              }
          }
@@ -78,33 +63,13 @@
 
      this.checkTimer = function() {
          var sub;
-         for (var i in this.timeSubscribtions) {
-             sub = this.timeSubscribtions[i];
+         for (var i in this.screen.timeSubscribtions) {
+             sub = this.screen.timeSubscribtions[i];
              if (sub.entity.seconds < sub.number) {
                  sub.callback();
              }
          }
      };
-
-     this.addLayer = function(layer) {
-         this.layers.push(layer);
-     };
-
-     this.deleteLayers = function() {
-         this.layers.length = 0;
-     };
-
-     this.addEntityToLayer = function(entity, layerNumber) {
-         if (typeof this.layers[layerNumber] === "undefined") {
-             var array = [];
-             this.layers.push(array);
-         };
-         this.layers[layerNumber].push(entity);
-     };
-
-     this.deleteUpperLayer = function() {
-         this.layers.pop();
-     }
 
      this.clearGameBoard = function() {
          ctx.clearRect(0, 0, canvasWidth, canvasHeight);
@@ -142,20 +107,20 @@
          this.checkCollision();
          this.checkTimer(dt);
          lastTime = now;
-
          requestAnimationFrame(this.start.bind(this));
-
      };
 
      this.update = function(dt) {
-         for (var i = 0; i < this.screen.length; i++) {
-             this.screen[i].update(dt);
+        var length = this.screen.entities.length;
+         for (var i = 0; i < length; i++) {
+             this.screen.entities[i].update(dt);
          }
      };
 
      this.render = function() {
-         for (var i = 0; i < this.screen.length; i++) {
-             this.screen[i].render(this);
+        var length = this.screen.entities.length;
+         for (var i = 0; i < length; i++) {
+             this.screen.entities[i].render(this);
          }
      };
 
@@ -166,19 +131,15 @@
          ctx.fillStyle = color;
          ctx.fillRect(x * gridWidth, y * gridHeight, w * gridWidth, h * gridHeight);
      };
-
      this.drawFullScreenRect = function(color) {
          ctx.fillStyle = color;
          ctx.fillRect(0, 0, canvasWidth, canvasHeight);
      };
-
-
      this.drawText = function(x, y, text, color, font) {
          ctx.fillStyle = color;
          ctx.font = font;
          ctx.fillText(text, x * gridWidth, y * gridHeight);
      };
-
      this.drawLine = function(x, y, x1, y1, width, color) {
          ctx.beginPath();
          ctx.moveTo(x * gridWidth, y * gridHeight);
@@ -187,7 +148,6 @@
          ctx.strokeStyle = color;
          ctx.stroke();
      };
-
      this.drawCircle = function(x, y, radius, color) {
          ctx.beginPath();
          ctx.arc(x * gridWidth, y * gridHeight, radius, 0, 2 * Math.PI);
@@ -196,44 +156,19 @@
 
      };
 
-     this.subscribtions = [];
      this.addSubscribtion = function(subscribtion) {
-         this.subscribtions.push(subscribtion);
-     };
-     this.deleteSubscriptions = function() {
-         this.subscribtions.length = 0;
+         this.screen.subscribtions.push(subscribtion);
      };
 
-     this.userInputSubscribtions = [];
      this.addUserInputSubscribtion = function(userInputSubscribtion) {
-         this.userInputSubscribtions.push(userInputSubscribtion);
-     };
-     this.deleteUserInputSubscriptions = function() {
-         this.userInputSubscribtions.length = 0;
+         this.screen.userInputSubscribtions.push(userInputSubscribtion);
      };
 
-     this.timeSubscribtions = [];
      this.addTimeSubscribtion = function(timeSubscribtion) {
-         this.timeSubscribtions.push(timeSubscribtion);
-     };
-     this.deleteTimeSubscriptions = function() {
-         this.timeSubscribtions.length = 0;
+         this.screen.timeSubscribtions.push(timeSubscribtion);
      };
 
-     // TODO: Remove method
-     this.changeLifeIconVisibility = function() {
-         for (var i in this.entities) {
-             if (this.entities[i] instanceof Life) {
-                 if (this.entities[i].isVisible === true) {
-                     this.entities[i].isVisible = false;
-                     break;
-                 }
-
-             }
-         }
-     };
      this.checkCollision = function() {
-         var currentLayer;
          var s;
          var e;
          var t;
@@ -242,18 +177,15 @@
          var cwidth;
          var eX;
          var ewidth;
-         for (var item in this.subscribtions) {
-             s = this.subscribtions[item];
+         for (var item in this.screen.subscribtions) {
+             s = this.screen.subscribtions[item];
              e = s.entity;
              t = s.types;
              var candidates = [];
              var element;
              for (var i in t) {
-                 for (var k = 0; k < this.screen.length; k++) {
-                     element = this.screen[k];
-
-                     //currentLayer = this.layers[k];
-                     //for (var j = 0; j < currentLayer.length; j++) {
+                 for (var k = 0; k < this.screen.entities.length; k++) {
+                     element = this.screen.entities[k];
                      if (element instanceof t[i]) {
                          candidates.push(element);
                      }
@@ -264,12 +196,6 @@
                          }
                      }
                      // }
-                     //}
-                 }
-                 for (j in this.backgroundEntities) {
-                     if (this.backgroundEntities[j] instanceof t[i]) {
-                         candidates.push(this.backgroundEntities[j]);
-                     }
                  }
              }
              eX = e.x + e.sprite.bbox.x;
