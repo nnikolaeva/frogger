@@ -9,11 +9,10 @@ var CompositeEntity = function(x, y) {
             this.components[i].render(engine);
         }
     };
-}; 
+};
 var Menu = function() {
     CompositeEntity.call(this, 0, 0);
     this.add(new FullScreenRectangleEntity());
-    //this.add(new RectangleEntity(this.x, this.y, this.width, this.height));
     this.add(new TextEntity(3, 16, "use the arrow keys to navigate and Enter to select the item", this.color, "20px Gloria Hallelujah"));
     this.controls = [];
     this.add = function(entity) {
@@ -40,7 +39,7 @@ var Menu = function() {
                 this.controls[i + 1].select();
                 break;
             }
-        }        
+        }
     };
     this.getSelectedControl = function() {
         var control;
@@ -181,12 +180,4 @@ var Slider = function(x, y, label, config) {
             displayedText.text = this.label + config.value;
         }
     };
-
-
-
-
-
-    
-
-    
 };

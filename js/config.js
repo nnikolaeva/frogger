@@ -46,6 +46,14 @@ var config = {
                 "step": 1,
                 "level": [2, 6, 10, 14]
             }
+        },
+        "key": {
+            "num": {
+                "range": [1, 10],
+                "value": 2,
+                "step": 1,
+                "level": [2, 6, 10, 14]
+            }
         }
     };
 

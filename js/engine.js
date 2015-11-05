@@ -10,10 +10,10 @@
   * Engine class translates game coordinates to pixels.
   */
  var Engine = function() {
-     var gridWidth = 40;//51;
-     var gridHeight = 33;//42;
-     var canvasWidth = 920;//969;
-     var canvasHeight = 680;//713//672;//714; numrows + 1 row for bonuses
+     var gridWidth = 40;
+     var gridHeight = 33;
+     var canvasWidth = 920;
+     var canvasHeight = 680;
      var lastTime;
      var canvas = document.getElementById("canvas");
      canvas.width = canvasWidth;
@@ -29,11 +29,11 @@
      this.screen = [];
 
      this.addEntityToScreen = function(entity) {
-        this.screen.push(entity);
+         this.screen.push(entity);
      };
 
      this.emptyScreen = function() {
-        this.screen.length = 0;
+         this.screen.length = 0;
      };
 
      this.screenBackup = [];
@@ -41,33 +41,30 @@
      this.userInputSubscribtionsBackup = [];
 
      this.copyCurrentGameState = function() {
-        copyArrays(this.screen, this.screenBackup);
-        copyArrays(this.subscribtions, this.subscribtionsBackup);
-        copyArrays(this.userInputSubscribtions, this.userInputSubscribtionsBackup);
+         copyArrays(this.screen, this.screenBackup);
+         copyArrays(this.subscribtions, this.subscribtionsBackup);
+         copyArrays(this.userInputSubscribtions, this.userInputSubscribtionsBackup);
      };
 
      this.pasteCurrentGameState = function() {
-        copyArrays(this.screenBackup, this.screen);
-        copyArrays(this.subscribtionsBackup, this.subscribtions);
-        copyArrays(this.userInputSubscribtionsBackup, this.userInputSubscribtions);
+         copyArrays(this.screenBackup, this.screen);
+         copyArrays(this.subscribtionsBackup, this.subscribtions);
+         copyArrays(this.userInputSubscribtionsBackup, this.userInputSubscribtions);
 
-        // empty backup
-        this.screenBackup.length = 0;
-        this.subscribtionsBackup.length = 0;
-        this.userInputSubscribtionsBackup.length = 0;
+         // empty backup
+         this.screenBackup.length = 0;
+         this.subscribtionsBackup.length = 0;
+         this.userInputSubscribtionsBackup.length = 0;
 
      };
 
      function copyArrays(array1, array2) {
-        for (var i in array1) {
-            array2.push(array1[i]);
-        }
+         for (var i in array1) {
+             array2.push(array1[i]);
+         }
      }
 
-
-
      this.handleUserInput = function(keyCode, numRows, numCols) {
-         //var upperLeyer = this.layers[this.layers.length - 1];
          var sub;
          for (var i = 0; i < this.userInputSubscribtions.length; i++) {
              sub = this.userInputSubscribtions[i];
@@ -80,14 +77,14 @@
      };
 
      this.checkTimer = function() {
-        var sub;
-        for (var i in this.timeSubscribtions) {
-            sub = this.timeSubscribtions[i];
-            if (sub.entity.seconds < sub.number) {
-                sub.callback();
-            }
-        }
-    };
+         var sub;
+         for (var i in this.timeSubscribtions) {
+             sub = this.timeSubscribtions[i];
+             if (sub.entity.seconds < sub.number) {
+                 sub.callback();
+             }
+         }
+     };
 
      this.addLayer = function(layer) {
          this.layers.push(layer);
@@ -134,31 +131,31 @@
          lastTime = Date.now();
          Resources.onReady(this.start.bind(this));
      };
-     
+
      this.start = function() {
          var now = Date.now();
          var dt = (now - lastTime) / 1000.0;
          if (this.on) {
-         this.update(dt);
-         } 
+             this.update(dt);
+         }
          this.render();
          this.checkCollision();
          this.checkTimer(dt);
          lastTime = now;
-        
+
          requestAnimationFrame(this.start.bind(this));
-        
+
      };
 
      this.update = function(dt) {
          for (var i = 0; i < this.screen.length; i++) {
-                 this.screen[i].update(dt);
+             this.screen[i].update(dt);
          }
      };
 
      this.render = function() {
          for (var i = 0; i < this.screen.length; i++) {
-                 this.screen[i].render(this);
+             this.screen[i].render(this);
          }
      };
 
@@ -171,8 +168,8 @@
      };
 
      this.drawFullScreenRect = function(color) {
-        ctx.fillStyle = color;
-        ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+         ctx.fillStyle = color;
+         ctx.fillRect(0, 0, canvasWidth, canvasHeight);
      };
 
 
@@ -183,19 +180,19 @@
      };
 
      this.drawLine = function(x, y, x1, y1, width, color) {
-        ctx.beginPath();
-        ctx.moveTo(x * gridWidth, y * gridHeight);
-        ctx.lineTo(x1 * gridWidth, y1 * gridHeight);
-        ctx.lineWidth = width;
-        ctx.strokeStyle = color;
-        ctx.stroke();
+         ctx.beginPath();
+         ctx.moveTo(x * gridWidth, y * gridHeight);
+         ctx.lineTo(x1 * gridWidth, y1 * gridHeight);
+         ctx.lineWidth = width;
+         ctx.strokeStyle = color;
+         ctx.stroke();
      };
 
      this.drawCircle = function(x, y, radius, color) {
-        ctx.beginPath();
-        ctx.arc(x * gridWidth, y * gridHeight, radius, 0, 2 * Math.PI);
-        ctx.fillStyle = color;
-        ctx.fill();
+         ctx.beginPath();
+         ctx.arc(x * gridWidth, y * gridHeight, radius, 0, 2 * Math.PI);
+         ctx.fillStyle = color;
+         ctx.fill();
 
      };
 
@@ -253,20 +250,20 @@
              var element;
              for (var i in t) {
                  for (var k = 0; k < this.screen.length; k++) {
-                    element = this.screen[k];
+                     element = this.screen[k];
 
                      //currentLayer = this.layers[k];
                      //for (var j = 0; j < currentLayer.length; j++) {
-                         if (element instanceof t[i]) {
-                             candidates.push(element);
+                     if (element instanceof t[i]) {
+                         candidates.push(element);
+                     }
+                     // if (typeof this.screen[k].components !== "undefined") {
+                     for (l in element.components) {
+                         if (element.components[l] instanceof t[i]) {
+                             candidates.push(element.components[l]);
                          }
-                         // if (typeof this.screen[k].components !== "undefined") {
-                            for (l in element.components) {
-                                if (element.components[l] instanceof t[i]) {
-                                    candidates.push(element.components[l]);
-                                }
-                            }
-                         // }
+                     }
+                     // }
                      //}
                  }
                  for (j in this.backgroundEntities) {
@@ -302,8 +299,7 @@
  };
 
  var TimeSubscribtion = function(entity, number, callback) {
-    this.entity = entity;
-    this.number = number;
-    this.callback = callback;
+     this.entity = entity;
+     this.number = number;
+     this.callback = callback;
  };
-

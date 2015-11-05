@@ -94,13 +94,14 @@ var SelectorBlock = function(x, y) {
     SpriteEntity.call(this, x, y, sprite('images/lock.png', 5, 25, defaultBoundingBox()));
 };
 var Gem = function(x, y, numCols, numRows, sprite, bonusNumber) {
-    SpriteEntity.call(this, x, y, sprite); 
+    SpriteEntity.call(this, x, y, sprite);
     this.visible = false;
     this.initialDelay = randValue(5);
     this.delay = this.initialDelay;
     this.initialLifeTime = 15;
     this.lifeTime = this.initialLlifeTime;
     this.bonusNumber = bonusNumber;
+
     function randValue(num) {
         return Math.round(Math.random() * num);
     }
@@ -110,7 +111,7 @@ var Gem = function(x, y, numCols, numRows, sprite, bonusNumber) {
         this.y = randValue(numRows);
         this.delay = this.initialDelay;
         this.lifeTime = this.initialLifeTime;
-    }; 
+    };
     this.update = function(dt) {
         if (this.delay > 0) {
             this.delay -= dt;
@@ -147,15 +148,9 @@ var Key = function(x, y) {
         this.x = 9;
         this.y = 19;
     };
-    // this.render = function(engine) {
-    //     if (this.isNotPicked) {
-    //         engine.drawImage(this.sprite, this.x, this.y);
-    //     }
-    // };
-    
 };
+
 var Enemy = function(x, y, speed, delay, numCols) {
-    // SpriteEntity.call(this, x, y, sprite('images/enemy-bug_small_1.png', 0, -10, defaultBoundingBox()));
     SpriteEntity.call(this, x, y, sprite('images/enemy-bug_small_1.png', 0, -10, boundingBox(0, 0.5, 1, 1)));
     this.initialX = x;
     this.isVisible = false;
@@ -179,7 +174,6 @@ var Enemy = function(x, y, speed, delay, numCols) {
     this.render = function(engine) {
         if (this.isVisible === true) {
             engine.drawImage(this.sprite, this.x, this.y); // TODO: use method in superclass
-            // engine.drawRect(this.x + this.sprite.bbox.x, this.y + this.sprite.bbox.y, this.sprite.bbox.w, this.sprite.bbox.h, "black"); 
         }
     };
 };
@@ -211,29 +205,23 @@ var Player = function(x, y, numberOfLifes) {
     };
 
     this.moveUp = function(numCols, numRows) {
-        // console.log(this.x);
-        
         if (this.wasFloating) {
             this.x = Math.floor(this.x);
             this.wasFloating = false;
         }
-        // console.log(this.x);
-        // console.log(this.y);
         if (this.y !== 0) {
             this.y = this.y - 1;
         }
-        //console.log(this.y);
     };
     this.moveDown = function(numCols, numRows) {
-                if (this.wasFloating) {
+        if (this.wasFloating) {
             this.x = Math.floor(this.x);
             this.wasFloating = false;
         }
-        
+
         if (this.y !== numRows - 1) {
             this.y = this.y + 1;
         }
-        //console.log(this.y);
     };
     this.moveLeft = function(numCols, numRows) {
         if (this.wasFloating) {
@@ -255,46 +243,38 @@ var Player = function(x, y, numberOfLifes) {
         this.wasFloating = true;
         this.x = entity.x;
         this.y = entity.y;
-        //this.sprite.dy = -50;
     };
     this.obtainKey = function(key) {
         this.isKeyObtained = true;
-        //key.moveToPlayerPanel();
 
     };
-    // test
-    // this.render = function(engine) {
-    //     engine.drawRect(this.x + this.sprite.bbox.x, this.y + this.sprite.bbox.y, this.sprite.bbox.w, this.sprite.bbox.h, "black");
-    // };
-
 };
 var Life = function(x, y, count) {
     CompositeEntity.call(this, x, y);
     this.count = count;
     this.text = "x " + this.count;
     this.add(new SpriteEntity(this.x, this.y, sprite('images/heart_small_1.png', 0, 5, defaultBoundingBox())));
-    //this.displayedText = new TextEntity(this.x + 1, this.y, "x " + count, this.color, "20px Gloria Hallelujah");
     this.displayedText = new TextEntity(x + 1, y + 1, this.text, this.color, "25px Gloria Hallelujah");
-
     this.add(this.displayedText);
     this.decreaseCount = function() {
-        this.count --;
-        this.displayedText.text = "x " + this.count;     
+        this.count--;
+        this.displayedText.text = "x " + this.count;
     };
 
 };
 
 var KeyCounter = function(x, y, count) {
     CompositeEntity.call(this, x, y);
-    this.count = count;
-    this.text = this.count;
+    this.currentKeyCount = 0;
+    this.requiredKeyCount = count;
+    this.text = this.currentKeyCount + " / " + this.requiredKeyCount;
     this.add(new SpriteEntity(this.x, this.y, sprite('images/new.png', 0, 5, boundingBox(0, 0.5, 1, 1))));
     this.displayedText = new TextEntity(x + 1, y + 1, this.text, this.color, "25px Gloria Hallelujah");
 
     this.add(this.displayedText);
     this.changeCounter = function() {
-        this.count --;
-        this.displayedText.text = this.count;     
+        this.currentKeyCount ++;
+        this.displayedText.text = this.currentKeyCount + " / " + this.requiredKeyCount;
     };
 
 };
@@ -318,14 +298,9 @@ var TransportPart = function(x, y) {
 
 var Transport = function(x, y, numCols, delay, speed, length) {
     CompositeEntity.call(this, x, y);
-    // this.add(new TransportPart(x, y));
-    // this.add(new TransportPart(x - 1, y));
-    // this.add(new TransportPart(x - 2, y));
-
     for (var i = 0; i < length; i++) {
         this.add(new TransportPart(x - i, y));
     }
-
     this.initialX = x;
     this.isVisible = false;
     this.delay = delay;
@@ -333,7 +308,7 @@ var Transport = function(x, y, numCols, delay, speed, length) {
     this.speed = speed;
     this.changeComponentsX = function(x) {
         var first;
-        for (var j = 0; j < this.components.length; j ++) {
+        for (var j = 0; j < this.components.length; j++) {
             if (j === 0) {
                 first = this.components[j];
                 first.x = x;
@@ -349,7 +324,7 @@ var Transport = function(x, y, numCols, delay, speed, length) {
             this.isVisible = true;
             this.x += dt * this.speed;
             this.changeComponentsX(this.x);
-            
+
             if ((this.speed > 0 && this.x >= numCols + this.components.length) || (this.speed < 0 && this.x < -1)) {
                 this.changeComponentsX(this.initialX);
                 this.x = this.initialX;
@@ -378,4 +353,3 @@ var CircleEntity = function(x, y, radius, color) {
         engine.drawCircle(this.x, this.y, this.radius, this.color);
     };
 };
-
