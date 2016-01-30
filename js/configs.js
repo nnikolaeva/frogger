@@ -1,9 +1,9 @@
 var assertDefined = function(x) {
 	if (x === undefined) {
-		throw "value is not defined"
+		throw "value is not defined";
 	}
 	return x;
-}
+};
 
 var defined = assertDefined;
 
@@ -26,11 +26,12 @@ var ConfigValue = function(map) {
 	this.min = defined(map.range[0]);
 	this.max = defined(map.range[1]);
 };
+
 var config = new Config(
 	new EnemyConfig(
 		new ConfigValue(0, 20, 10) /* num */,
 		new ConfigValue(0, 14, 7) /* speed */,
-		new ConfigValue(0, 2, 1) /* deplay */),
+		new ConfigValue(0, 2, 1) /* delay */),
 	new TransportConfig(
 		new ConfigValue(0, 20, 10),
 		new ConfigValue(0, 14, 7),
@@ -73,16 +74,16 @@ var ConfigBuilder = function() {
 	this.from = function(b) {
 		this.enemyConfig = b.enemyConfig;
 		this.transportConfig = b.transportConfig;
-	}
+	};
 	this.withEnemyConfig = function(enemyConfig) {
 		this.enemyConfig = assertDefined(enemyConfig);
 		return this;
-	}
+	};
 	this.withTransportConfig = fucntion(transportConfig) {
 		this.transportConfig = assertDefined(transportConfig);
 		return this;
 	}
 	this.build = function() {
 		return new Config(assertDefined(enemyConfig), assertDefined(transportConfig));
-	}
-}
+	};
+};

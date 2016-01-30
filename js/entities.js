@@ -82,13 +82,13 @@ var Timer = function(x, y, seconds) {
 };
 
 var WaterBlock = function(x, y) {
-    SpriteEntity.call(this, x, y, simpleSprite('images/water-block_small_1.png'));
+    SpriteEntity.call(this, x, y, simpleSprite('images/water-block.png'));
 };
 var StoneBlock = function(x, y) {
-    SpriteEntity.call(this, x, y, simpleSprite('images/stone-block_small_1.png'));
+    SpriteEntity.call(this, x, y, simpleSprite('images/stone-block.png'));
 };
 var GrassBlock = function(x, y) {
-    SpriteEntity.call(this, x, y, simpleSprite('images/grass-block_small_1.png'));
+    SpriteEntity.call(this, x, y, simpleSprite('images/grass-block.png'));
 };
 var SelectorBlock = function(x, y) {
     SpriteEntity.call(this, x, y, sprite('images/lock.png', 5, 25, defaultBoundingBox()));
@@ -114,7 +114,7 @@ var Bonus = function(sprite, numCols, numRows) {
     this.changePosition = function() {
         this.visible = false;
         this.x = randValue(numCols);
-        this.y = randValue(numRows);
+        this.y = randValue(numRows) + 1;
         this.delay = this.initialDelay;
         this.lifeTime = this.initialLifeTime;
     };
@@ -138,47 +138,34 @@ var Bonus = function(sprite, numCols, numRows) {
 };
 
 var BlueGem = function(numCols, numRows) {
-    Bonus.call(this, sprite('images/gem-blue_new.png', 10, 10, defaultBoundingBox()), numCols, numRows);
+    Bonus.call(this, sprite('images/gem-blue.png', 10, 10, defaultBoundingBox()), numCols, numRows);
     this.bonusNumber = 10;
 };
 var GreenGem = function(numCols, numRows) {
-    Bonus.call(this, sprite('images/gem-green_new.png', 10, 10, defaultBoundingBox()), numCols, numRows);
+    Bonus.call(this, sprite('images/gem-green.png', 10, 10, defaultBoundingBox()), numCols, numRows);
     this.bonusNumber = 20;
 };
 var OrangeGem = function(numCols, numRows) {
-    Bonus.call(this, sprite('images/gem-orange_new.png', 10, 10, defaultBoundingBox()), numCols, numRows);
+    Bonus.call(this, sprite('images/gem-orange.png', 10, 10, defaultBoundingBox()), numCols, numRows);
     this.bonusNumber = 30;
 };
 var Life = function(numCols, numRows) {
-    Bonus.call(this, sprite('images/heart_small_new.png', 10, 10, defaultBoundingBox()), numCols, numRows);
-    this.setDelay(10);
+    Bonus.call(this, sprite('images/heart.png', 10, 10, defaultBoundingBox()), numCols, numRows);
 
 };
 
-// var BlueGem = function(x, y, numCols, numRows) {
-//     Gem.call(this, x, y, numCols, numRows, sprite('images/gem-blue_new.png', 10, 10, defaultBoundingBox()), 10);
-// };
-// var GreenGem = function(x, y, numCols, numRows) {
-//     Gem.call(this, x, y, numCols, numRows, sprite('images/gem-green_new.png', 10, 10, defaultBoundingBox()), 20);
-// };
-// var OrangeGem = function(x, y, numCols, numRows) {
-//     Gem.call(this, x, y, numCols, numRows, sprite('images/gem-orange_new.png', 10, 10, defaultBoundingBox()), 30);
-// };
-// var Life = function(x, y, numCols, numRows) {
-//     Gem.call(this, x, y, numCols, numRows, sprite('images/heart_small_new.png', 10, 10, defaultBoundingBox()), 10);  
-// };
-
 var Key = function(x, y) {
-    SpriteEntity.call(this, x, y, sprite('images/new.png', 0, 5, boundingBox(0, 0.5, 1, 1)));
+    SpriteEntity.call(this, x, y, sprite('images/key.png', 0, 5, boundingBox(0, 0.5, 1, 1)));
     this.isNotPicked = true;
     this.changeState = function() {
-        this.x = 9;
+        this.sprite.dy = -5;
+        this.x = 3;
         this.y = 19;
     };
 };
 
-var Enemy = function(x, y, speed, delay, numCols) {
-    SpriteEntity.call(this, x, y, sprite('images/enemy-bug_small_1.png', 0, -10, boundingBox(0, 0.5, 1, 1)));
+var Enemy = function(x, y, speed, delay, numCols, image) {
+    SpriteEntity.call(this, x, y, sprite(image, 0, -10, boundingBox(0, 0.5, 1, 1)));
     this.initialX = x;
     this.isVisible = false;
     this.delay = delay;
@@ -191,7 +178,7 @@ var Enemy = function(x, y, speed, delay, numCols) {
         } else {
             this.isVisible = true;
             this.x = this.x + dt * this.speed;
-            if (this.x >= numCols) {
+            if ((this.speed > 0 && this.x >= numCols) || (this.speed < 0 && this.x < -1)) {
                 this.x = this.initialX;
                 this.delay = this.initDelay;
                 this.isVisible = false;
@@ -200,12 +187,21 @@ var Enemy = function(x, y, speed, delay, numCols) {
     };
     this.render = function(engine) {
         if (this.isVisible === true) {
-            engine.drawImage(this.sprite, this.x, this.y); // TODO: use method in superclass
+            engine.drawImage(this.sprite, this.x, this.y);
         }
     };
 };
+
+var EnemyLeftToRight = function(x, y, speed, delay, numCols) {
+    Enemy.call(this, x, y, speed, delay, numCols, "images/enemy-bug.png");
+};
+
+var EnemyRightToLeft = function(x, y, speed, delay, numCols) {
+    Enemy.call(this, x, y, speed, delay, numCols, "images/enemy-bug_flipped.png");
+};
+
 var Player = function(x, y, numberOfLifes, numCols, numRows) {
-    SpriteEntity.call(this, x, y, sprite('images/char-boy_small_1.png', 0, -5, boundingBox(0.17, 0.36, 0.66, 0.46)));
+    SpriteEntity.call(this, x, y, sprite('images/char-boy.png', 0, -5, boundingBox(0.17, 0.36, 0.66, 0.46)));
     this.initialX = x;
     this.initialY = y;
     this.numberOfLifes = numberOfLifes;
@@ -288,7 +284,7 @@ var LifeCounter = function(x, y, count) {
     CompositeEntity.call(this, x, y);
     this.count = count;
     this.text = "x " + this.count;
-    this.add(new SpriteEntity(this.x, this.y, sprite('images/heart_small_1.png', 0, 5, defaultBoundingBox())));
+    this.add(new SpriteEntity(this.x, this.y, sprite('images/heart.png', 0, -5, defaultBoundingBox())));
     this.displayedText = new TextEntity(x + 1, y + 1, this.text, this.color, "25px Gloria Hallelujah");
     this.add(this.displayedText);
     this.decreaseCount = function() {
@@ -307,7 +303,7 @@ var KeyCounter = function(x, y, count) {
     this.currentKeyCount = 0;
     this.requiredKeyCount = count;
     this.text = this.currentKeyCount + " / " + this.requiredKeyCount;
-    this.add(new SpriteEntity(this.x, this.y, sprite('images/new.png', 0, 5, boundingBox(0, 0.5, 1, 1))));
+    this.add(new SpriteEntity(this.x, this.y, sprite('images/key.png', 0, -5, boundingBox(0, 0.5, 1, 1))));
     this.displayedText = new TextEntity(x + 1, y + 1, this.text, this.color, "25px Gloria Hallelujah");
 
     this.add(this.displayedText);
@@ -332,7 +328,7 @@ var ScoreCounter = function(x, y) {
 };
 
 var TransportPart = function(x, y) {
-    SpriteEntity.call(this, x, y, sprite('images/log_small_1.png', 0, 35, boundingBox(0.3, 0, 0.3, 0.3)));
+    SpriteEntity.call(this, x, y, sprite('images/log.png', 0, 35, boundingBox(0.3, 0, 0.3, 0.3)));
 };
 
 var Transport = function(x, y, numCols, delay, speed, length) {

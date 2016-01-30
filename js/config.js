@@ -1,58 +1,58 @@
 var config = {
         "enemy": {
             "speed": {
-                "range": [0, 14],
-                "value": 1,
+                "range": [0, 15],
+                "value": 7,
                 "step": 1,
-                "level": [2, 6, 10, 14]
+                "level": [2, 7, 12]
             },
             "num": {
-                "range": [0, 20],
-                "value": 10,
-                "step": 1,
-                "level": [2, 6, 10, 14]
+                "range": [0, 40],
+                "value": 20,
+                "step": 2,
+                "level": [10, 20, 30]
             },
             "delay": {
-                "range": [0, 2],
+                "range": [0, 5],
                 "value": 1,
                 "step": 1,
-                "level": [0, 1, 2, 2]
+                "level": [0, 1, 2]
             }
         },
         "transport": {
             "speed": {
-                "range": [0, 14],
-                "value": 3,
+                "range": [0, 15],
+                "value": 2,
                 "step": 1,
-                "level": [2, 6, 10, 14]
+                "level": [1, 2, 6]
             },
             "num": {
-                "range": [0, 20],
-                "value": 25,
-                "step": 1,
-                "level": [2, 6, 10, 14]
+                "range": [8, 50],
+                "value": 26,
+                "step": 2,
+                "level": [30, 26, 14]
             },
             "delay": {
-                "range": [0, 2],
+                "range": [0, 5],
                 "value": 1,
                 "step": 1,
-                "level": [0, 0, 1, 2]
+                "level": [0, 1, 3]
             }
         },
         "exit": {
             "num": {
                 "range": [1, 10],
-                "value": 5,
+                "value": 3,
                 "step": 1,
-                "level": [2, 6, 10, 14]
+                "level": [5, 3, 1]
             }
         },
         "key": {
             "num": {
-                "range": [1, 10],
-                "value": 2,
+                "range": [0, 10],
+                "value": 3,
                 "step": 1,
-                "level": [2, 6, 10, 14]
+                "level": [1, 3, 5]
             }
         }
     };

@@ -47,11 +47,16 @@ var GameController = function(engine, width, height) {
         engine.emptyScreen();
         setUpBackground();
         setUpForeground(config);
+    };
+
+    function runOutOfLifesGameOver() {
+        engine.emptyScreen();
+        gameOver("run out of lives");
     }
 
-    function resetGame() {
+    function runOutOfTimeGameOver() {
         engine.emptyScreen();
-        gameOver();
+        gameOver("time is up");
     }
 
     function resetLevel() {
@@ -64,12 +69,12 @@ var GameController = function(engine, width, height) {
             lifeCounter.decreaseCount();
             resetLevel();
         } else {
-            resetGame();
+            runOutOfLifesGameOver();
         }
     }
 
     function onWin() {
-        if (player.isKeyObtained === true) {
+        if (player.isKeyObtained === true || keyCounter.requiredKeyCount === 0) {
             engine.emptyScreen();
             win();
         }
@@ -137,7 +142,7 @@ var GameController = function(engine, width, height) {
                 } else if ((row === 0 && col % 2 !== 0) || (row > 0 && row < 8)) {
                     engine.addEntityToScreen(new WaterBlock(col, row));
                 } else if (row === height - 1) {
-                    engine.addEntityToScreen(new RectangleEntity(col, 19, 1, 1))
+                    engine.addEntityToScreen(new RectangleEntity(col, 19, 1, 2));
                 } else {
                     engine.addEntityToScreen(new StoneBlock(col, row));
                 }
@@ -151,9 +156,9 @@ var GameController = function(engine, width, height) {
         }
         // setup gems
         for (var i = 0; i < NUM_GEMS; i++) {
-            engine.addEntityToScreen(new BlueGem(width - 1, height - 2));
-            engine.addEntityToScreen(new GreenGem(width - 1, height - 2));
-            engine.addEntityToScreen(new OrangeGem(width - 1, height - 2));
+            engine.addEntityToScreen(new BlueGem(width - 1, height - 3));
+            engine.addEntityToScreen(new GreenGem(width - 1, height - 3));
+            engine.addEntityToScreen(new OrangeGem(width - 1, height - 3));
         }
 
         var KeyCount = assertDefined(config.key.num.value);
@@ -164,14 +169,14 @@ var GameController = function(engine, width, height) {
         lifeCounter = new LifeCounter(0, 19, LIFE_NUMBER);
         engine.addEntityToScreen(lifeCounter);
 
-        keyCounter = new KeyCounter(9, 19, KeyCount);
+        keyCounter = new KeyCounter(3, 19, KeyCount);
         engine.addEntityToScreen(keyCounter);
 
-        scoreCounter = new ScoreCounter(15, 19);
+        scoreCounter = new ScoreCounter(17, 19);
         engine.addEntityToScreen(scoreCounter);
 
         engine.addEntityToScreen(new Life(width - 1, height - 2));
-    }
+    };
 
     var setUpForeground = function() {
         var enemySpeed = assertDefined(config.enemy.speed.value);
@@ -183,7 +188,11 @@ var GameController = function(engine, width, height) {
         var delay = 0;
         for (var i = 0; i < enemyCount; i++) {
             speed = Math.random() * 2 + enemySpeed;
-            engine.addEntityToScreen(new Enemy(-1, i % 8 + 9, speed, delay, width));
+            if ((i % 8) % 2 === 0) {
+                engine.addEntityToScreen(new EnemyLeftToRight(-1, i % 8 + 9, speed, delay, width));
+            } else {
+                engine.addEntityToScreen(new EnemyRightToLeft(width, i % 8 + 9, -1 * speed, delay, width));
+            }
             delay = Math.random() * 4 + enemyDelay;
         }
 
@@ -215,7 +224,7 @@ var GameController = function(engine, width, height) {
         engine.addUserInputSubscribtion(new UserInputSubscribtion("left", player, player.moveLeft.bind(player, width, height - 1)));
         engine.addUserInputSubscribtion(new UserInputSubscribtion("right", player, player.moveRight.bind(player, width, height - 1)));
         engine.addUserInputSubscribtion(new UserInputSubscribtion("esc", player, pause));
-        engine.addSubscribtion(new Subscribtion(player, [Enemy], onCollision));
+        engine.addSubscribtion(new Subscribtion(player, [EnemyLeftToRight, EnemyRightToLeft], onCollision));
         engine.addSubscribtion(new Subscribtion(player, [SelectorBlock], onWin));
         engine.addSubscribtion(new Subscribtion(player, [BlueGem, GreenGem, OrangeGem], onGemPickedUp));
         engine.addSubscribtion(new Subscribtion(player, [Life], onLifePickedUp));
@@ -223,10 +232,10 @@ var GameController = function(engine, width, height) {
         engine.addSubscribtion(new Subscribtion(player, [WaterBlock], onWater));
         engine.addSubscribtion(new Subscribtion(player, [Key], onKeyPickedUp));
 
-        var timer = new Timer(4, 20, 180);
+        var timer = new Timer(10, 20, 45);
         engine.addEntityToScreen(timer);
-        engine.addTimeSubscribtion(new TimeSubscribtion(timer, 0, resetGame));
-    }
+        engine.addTimeSubscribtion(new TimeSubscribtion(timer, 0, runOutOfTimeGameOver));
+    };
 };
 
 var StartMenuController = function(engine, gameController, levelMenuController) {
@@ -269,30 +278,12 @@ var LevelMenuController = function(engine, gameController, configMenuController)
         setConfigToLevel(1);
         gameController.startGame();
     };
-    this.setUpLevelMenu = function() {
-        var levelMenu = new LevelMenu(easyButtonCallback, mediumButtonCallback, configButtonCallBack);
-        engine.addEntityToScreen(levelMenu);
-        engine.addUserInputSubscribtion(new UserInputSubscribtion("enter", levelMenu, levelMenu.handleEnter.bind(levelMenu)));
-        engine.addUserInputSubscribtion(new UserInputSubscribtion("up", levelMenu, levelMenu.handleUp.bind(levelMenu)));
-        engine.addUserInputSubscribtion(new UserInputSubscribtion("down", levelMenu, levelMenu.handleDown.bind(levelMenu)));
-    };
-};
-
-var LevelMenuController = function(engine, gameController, configMenuController) {
-    var configButtonCallBack = function() {
-        engine.emptyScreen();
-        configMenuController.setUpConfigMenu();
-    };
-    var easyButtonCallback = function() {
-        setConfigToLevel(0);
-        gameController.startGame();
-    };
-    var mediumButtonCallback = function() {
-        setConfigToLevel(1);
+    var hardButtonCallback = function() {
+        setConfigToLevel(2);
         gameController.startGame();
     };
     this.setUpLevelMenu = function() {
-        var levelMenu = new LevelMenu(easyButtonCallback, mediumButtonCallback, configButtonCallBack);
+        var levelMenu = new LevelMenu(easyButtonCallback, mediumButtonCallback, hardButtonCallback, configButtonCallBack);
         engine.addEntityToScreen(levelMenu);
         engine.addUserInputSubscribtion(new UserInputSubscribtion("enter", levelMenu, levelMenu.handleEnter.bind(levelMenu)));
         engine.addUserInputSubscribtion(new UserInputSubscribtion("up", levelMenu, levelMenu.handleUp.bind(levelMenu)));
@@ -305,8 +296,8 @@ var GameOverMenuController = function(engine, gameController, levelMenuControlle
         engine.emptyScreen();
         levelMenuController.setUpLevelMenu();
     };
-    this.setUpGameOverMenu = function() {
-        var gameOverMenu = new GameOverMenu(gameController.startGame.bind(gameController), levelButtonCallBack);
+    this.setUpGameOverMenu = function(reason) {
+        var gameOverMenu = new GameOverMenu(gameController.startGame.bind(gameController), levelButtonCallBack, reason);
         engine.addEntityToScreen(gameOverMenu);
         engine.addUserInputSubscribtion(new UserInputSubscribtion("enter", gameOverMenu, gameOverMenu.handleEnter.bind(gameOverMenu)));
         engine.addUserInputSubscribtion(new UserInputSubscribtion("up", gameOverMenu, gameOverMenu.handleUp.bind(gameOverMenu)));
@@ -330,7 +321,6 @@ var WinMenuController = function(engine, gameController, levelMenuController) {
 
 var PauseMenuController = function(engine, startMenuController) {
     var resumeButtonCallback = function() {
-        console.log("resume");
         engine.emptyScreen();
         engine.pasteCurrentGameState();
         engine.on = true;
@@ -339,7 +329,7 @@ var PauseMenuController = function(engine, startMenuController) {
         engine.emptyScreen();
         engine.on = true;
         startMenuController.setUpStartMenu();
-    }
+    };
     this.setUpPauseMenu = function() {
         engine.on = false;
         engine.copyCurrentGameState();

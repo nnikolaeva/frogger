@@ -13,7 +13,7 @@ var CompositeEntity = function(x, y) {
 var Menu = function() {
     CompositeEntity.call(this, 0, 0);
     this.add(new FullScreenRectangleEntity());
-    this.add(new TextEntity(3, 16, "use the arrow keys to navigate and Enter to select the item", this.color, "20px Gloria Hallelujah"));
+    this.add(new TextEntity(3, 20, "use the arrow keys to navigate and Enter to select the item", this.color, "20px Gloria Hallelujah"));
     this.controls = [];
     this.add = function(entity) {
         this.components.push(entity);
@@ -51,7 +51,7 @@ var Menu = function() {
         }
     };
     this.handleEnter = function() {
-        var control = this.getSelectedControl(); //add check if onClick not null
+        var control = this.getSelectedControl();
         control.onClick();
     };
     this.handleLeft = function() {
@@ -66,50 +66,53 @@ var Menu = function() {
 
 var StartMenu = function(startButtonCallback, configButtonCallBack) {
     Menu.call(this);
-    this.add(new TextEntity(4, 4, "Frogger", this.color, "bold 100px Gloria Hallelujah"));
+    this.add(new TextEntity(4, 4, "Frogger Game", this.color, "bold 80px Gloria Hallelujah"));
     this.add(new Button(7, 9, "start", startButtonCallback));
     this.add(new Button(7, 11, "config", configButtonCallBack));
 };
 
 var PauseMenu = function(resumeButtonCallback, startMenuButtonCallback) {
     Menu.call(this);
-    this.add(new TextEntity(4, 4, "Paused", this.color, "bold 100px Gloria Hallelujah"));
+    this.add(new TextEntity(4, 4, "Game Paused", this.color, "bold 80px Gloria Hallelujah"));
     this.add(new Button(7, 9, "resume game", resumeButtonCallback));
     this.add(new Button(7, 11, "main menu", startMenuButtonCallback));
 };
 
-var GameOverMenu = function(startButtonCallback, configButtonCallBack) {
+var GameOverMenu = function(startButtonCallback, configButtonCallBack, reason) {
     Menu.call(this);
-    this.add(new TextEntity(4, 4, "Game Over :(", this.color, "bold 100px Gloria Hallelujah"));
+    this.add(new TextEntity(4, 4, "Game Over", this.color, "bold 80px Gloria Hallelujah"));
+    this.add(new TextEntity(4, 6, "Reason: " + reason, this.color, "bold 30px Gloria Hallelujah"));
     this.add(new Button(7, 9, "try again", startButtonCallback));
     this.add(new Button(7, 11, "config", configButtonCallBack));
 };
 
 var WinMenu = function(startButtonCallback, configButtonCallBack) {
     Menu.call(this);
-    this.add(new TextEntity(4, 4, "Congrats!", this.color, "bold 100px Gloria Hallelujah"));
+    this.add(new TextEntity(4, 4, "You Win!", this.color, "bold 80px Gloria Hallelujah"));
     this.add(new Button(7, 9, "play again", startButtonCallback));
     this.add(new Button(7, 11, "config", configButtonCallBack));
 };
 
 var ConfigMenu = function(config, startButtonCallback) {
     Menu.call(this);
-    this.add(new TextEntity(2, 4, "Select Difficulty", this.color, "bold 100px Gloria Hallelujah"));
-    this.add(new Slider(4, 6, "enemy speed", assertDefined(config.enemy.speed)));
-    this.add(new Slider(4, 7, "enemy count", assertDefined(config.enemy.num)));
-    this.add(new Slider(4, 8, "enemy delay", assertDefined(config.enemy.delay)));
-    this.add(new Slider(4, 9, "transport speed", assertDefined(config.transport.speed)));
-    this.add(new Slider(4, 10, "transport count", assertDefined(config.transport.num)));
-    this.add(new Slider(4, 11, "transport delay", assertDefined(config.transport.delay)));
-    this.add(new Slider(4, 12, "exit count", assertDefined(config.exit.num)));
-    this.add(new Button(15, 15, "start", startButtonCallback));
+    this.add(new TextEntity(3, 4, "Adjust Difficulty", this.color, "bold 80px Gloria Hallelujah"));
+    this.add(new Slider(4, 7, "enemy speed", assertDefined(config.enemy.speed)));
+    this.add(new Slider(4, 8, "enemy count", assertDefined(config.enemy.num)));
+    this.add(new Slider(4, 9, "enemy delay", assertDefined(config.enemy.delay)));
+    this.add(new Slider(4, 10, "transport speed", assertDefined(config.transport.speed)));
+    this.add(new Slider(4, 11, "transport count", assertDefined(config.transport.num)));
+    this.add(new Slider(4, 12, "transport delay", assertDefined(config.transport.delay)));
+    this.add(new Slider(4, 13, "exit count", assertDefined(config.exit.num)));
+    this.add(new Slider(4, 14, "key required", assertDefined(config.key.num)));
+    this.add(new Button(15, 17, "start", startButtonCallback));
 };
-var LevelMenu = function(easyButtonCallback, mediumButtonCallback, configButtonCallBack) {
+var LevelMenu = function(easyButtonCallback, mediumButtonCallback, hardButtonCallback, configButtonCallBack) {
     Menu.call(this);
-    this.add(new TextEntity(4, 4, "Select Difficulty Level", this.color, "bold 100px Gloria Hallelujah"));
+    this.add(new TextEntity(4, 4, "Select Level", this.color, "bold 80px Gloria Hallelujah"));
     this.add(new Button(7, 9, "easy", easyButtonCallback));
     this.add(new Button(7, 11, "medium", mediumButtonCallback));
-    this.add(new Button(7, 13, "customize", configButtonCallBack));
+    this.add(new Button(7, 13, "hard", hardButtonCallback));
+    this.add(new Button(7, 15, "customize", configButtonCallBack));
 };
 
 var Control = function(x, y) {
@@ -149,13 +152,13 @@ var Slider = function(x, y, label, config) {
     this.label = label + ": ";
     this.barLength = 6;
     this.barWidth = 2;
-    this.barX = this.x + 6;
+    this.barX = this.x + 8;
     this.barY = this.y;
     this.min = config.range[0];
     this.max = config.range[1];
     this.pointerRadius = 8;
-    this.poiterStep = this.barLength / this.max;
-    this.poiterX = this.barX + config.value * this.poiterStep;
+    this.poiterStep = this.barLength * config.step / (this.max - this.min);
+    this.poiterX = this.barX + (config.value - this.min) / config.step * this.poiterStep;
 
     var displayedText = new TextEntity(this.x, this.y, this.label + config.value, this.color, "25px Gloria Hallelujah");
     var pointer = new CircleEntity(this.poiterX, this.barY, this.pointerRadius, this.color);
