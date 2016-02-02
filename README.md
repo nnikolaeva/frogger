@@ -1,20 +1,20 @@
-## Frogger game project
+## Frogger game
 
-Implementation of a classic game with complete UI flows - from start menu with fully configurable game settings to game over and win screens. Implemented using in-house game engine.
+Implementation of a classic game with complete UI flows: from a "start" menu with fully configurable game settings, to "game over" and "You have won" screens. Implemented using in-house game engine.
 
-####HOW TO RUN THE APPLICATION
+### How to run
 
-1. Download all files and open index.html in your favorite browser.
-3. Or view the application at http://nnikolaeva.github.io/frogger
+Open the game at http://nnikolaeva.github.io/frogger.
 
-####THE GOAL OF THE GAME
+### Goal of the game
 
-1. The goal of the player is to collect required number of keys and reach the grass with lock without colliding into any one of the enemies.
+Collect all keys and reach any lock while evading enemies and not drowning in the river.
 
-####HOW TO USE APPLICATION
-1. Use arrow keys to move player left, right, up and down.
-2. Use ESC button to pause the game.
-2. Once a the player collides with an enemy or jump in the water the number of lives is decreased.
-3. Once the player collects required number of keys and reaches the grass with lock the game is won.
-4. Config menu allows user to choose one of three difficulty levels
-5. Config -> Customize menu allows user to adjust difficulty
+### How to use
+
+* Arrow keys move player.
+* ESC pauses the game.
+* Touching enemies or stepping in the watter takes one life. Game ends when you run out of lives.
+* You win when you colect all the keys and reach any lock.
+* You can select from one of the predefined difficuly levels in the "Config" menu,
+* or you can adjust difficuly to your liking in the "Config -> Customize" menu.
