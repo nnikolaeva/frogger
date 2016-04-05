@@ -16,5 +16,5 @@ Collect all keys and reach any lock while evading enemies and not drowning in th
 * ESC pauses the game.
 * Touching enemies or stepping in the watter takes one life. Game ends when you run out of lives.
 * You win when you colect all the keys and reach any lock.
-* You can select from one of the predefined difficuly levels in the "Config" menu,
-* or you can adjust difficuly to your liking in the "Config -> Customize" menu.
+* You can select from one of the predefined difficulty levels in the "Config" menu,
+* or you can adjust difficulty to your liking in the "Config -> Customize" menu.
